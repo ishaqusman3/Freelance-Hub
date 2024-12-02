@@ -1,62 +1,8 @@
-// // import React, { useEffect, useState } from 'react';
-// // import { getJobsByClient } from '../services/jobService'; // Import service function
-// // import { useAuth } from '../context/FirebaseAuthContext';
-
-// // const MyJobsPage = () => {
-// //   const { currentUser } = useAuth();
-// //   const [jobs, setJobs] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [error, setError] = useState(null);
-
-// //   useEffect(() => {
-// //     const fetchJobs = async () => {
-// //       try {
-// //         if (!currentUser) return;
-
-// //         // Fetch jobs posted by the logged-in client
-// //         const fetchedJobs = await getJobsByClient(currentUser.uid);
-// //         setJobs(fetchedJobs);
-// //       } catch (err) {
-// //         setError('Failed to fetch jobs');
-// //         console.error(err);
-// //       } finally {
-// //         setLoading(false);
-// //       }
-// //     };
-
-// //     fetchJobs();
-// //   }, [currentUser]);
-
-// //   if (loading) return <div className="text-center mt-8">Loading...</div>;
-// //   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
-
-// //   return (
-// //     <div className="container mx-auto px-4 py-8">
-// //       <h2 className="text-3xl font-bold mb-6">My Jobs</h2>
-      
-// //       {jobs.length === 0 ? (
-// //         <p>No jobs found. Start by posting a job!</p>
-// //       ) : (
-// //         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-// //           {jobs.map((job) => (
-// //             <div key={job.id} className="bg-white p-4 rounded-lg shadow-md">
-// //               <h3 className="text-xl font-semibold">{job.title}</h3>
-// //               <p className="text-gray-700">{job.description}</p>
-// //               <p className="text-sm text-gray-500">Budget: ${job.budget}</p>
-// //               <p className="text-sm text-gray-500">Deadline: {job.deadline}</p>
-// //             </div>
-// //           ))}
-// //         </div>
-// //       )}
-// //     </div>
-// //   );
-// // };
-
-// // export default MyJobsPage;
 // import React, { useEffect, useState } from "react";
 // import { getJobsByClient } from "../services/jobService";
-// import { getProposalsByJob, acceptProposal, declineProposal } from "../services/proposalService"; // Add these in services
+// import { getProposalsByJob, acceptProposal, declineProposal } from "../services/proposalService";
 // import { useAuth } from "../context/FirebaseAuthContext";
+// import { useNavigate } from "react-router-dom";
 
 // const MyJobsPage = () => {
 //   const { currentUser } = useAuth();
@@ -65,6 +11,7 @@
 //   const [selectedJob, setSelectedJob] = useState(null);
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState(null);
+//   const navigate = useNavigate();
 
 //   useEffect(() => {
 //     const fetchJobs = async () => {
@@ -114,6 +61,11 @@
 //     }
 //   };
 
+//   const handleChatWithFreelancer = (freelancerId, freelancerName) => {
+//     const chatId = `${currentUser.uid}_${freelancerId}`; // Generate a unique chat ID
+//     navigate(`/chat/${chatId}`, { state: { freelancerId, freelancerName } }); // Navigate to the DirectMessagingPage
+//   };
+
 //   if (loading) return <div>Loading...</div>;
 //   if (error) return <div>{error}</div>;
 
@@ -149,19 +101,23 @@
 //                         className="bg-gray-100 p-3 rounded mb-2"
 //                       >
 //                         <p>
-//                           <strong>Freelancer:</strong> {proposal.freelancerName}
+//                           <strong>Freelancer:</strong> {proposal.freelancerName || "Unknown"}
 //                         </p>
 //                         <p>
 //                           <strong>Status:</strong> {proposal.status}
 //                         </p>
-//                         <div className="mt-2">
+//                         <p>
+//                           <strong>Submitted At:</strong>{" "}
+//                           {proposal.submittedAt
+//                             ? new Date(proposal.submittedAt.seconds * 1000).toLocaleString()
+//                             : "Unknown"}
+//                         </p>
+//                         <div className="mt-2 flex gap-2">
 //                           {proposal.status === "pending" && (
 //                             <>
 //                               <button
-//                                 className="bg-green-500 text-white px-4 py-2 rounded mr-2"
-//                                 onClick={() =>
-//                                   handleAcceptProposal(proposal.id)
-//                                 }
+//                                 className="bg-green-500 text-white px-4 py-2 rounded"
+//                                 onClick={() => handleAcceptProposal(proposal.id)}
 //                               >
 //                                 Accept
 //                               </button>
@@ -173,6 +129,15 @@
 //                               </button>
 //                             </>
 //                           )}
+//                           {/* Chat Button */}
+//                           <button
+//                             className="bg-indigo-500 text-white px-4 py-2 rounded"
+//                             onClick={() =>
+//                               handleChatWithFreelancer(proposal.freelancerId, proposal.freelancerName)
+//                             }
+//                           >
+//                             Chat
+//                           </button>
 //                         </div>
 //                       </div>
 //                     ))
@@ -190,16 +155,19 @@
 // export default MyJobsPage;
 import React, { useEffect, useState } from "react";
 import { getJobsByClient } from "../services/jobService";
-import { getProposalsByJob, acceptProposal, declineProposal } from "../services/proposalService"; 
+import { getProposalsByJob, acceptProposal, declineProposal } from "../services/proposalService";
+import { getOrCreateChat } from "../services/messageService"; // Import chat logic
 import { useAuth } from "../context/FirebaseAuthContext";
+import { useNavigate } from "react-router-dom";
 
 const MyJobsPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [proposals, setProposals] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -249,6 +217,20 @@ const MyJobsPage = () => {
     }
   };
 
+  const handleChatWithFreelancer = async (freelancerId, freelancerName) => {
+    try {
+      const chatId = await getOrCreateChat(
+        currentUser.uid,
+        freelancerId,
+        userData.fullName, // Client's name
+        freelancerName // Freelancer's name
+      );
+      navigate(`/chat/${chatId}`, { state: { freelancerId, freelancerName } });
+    } catch (error) {
+      console.error("Error starting chat:", error);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -279,21 +261,24 @@ const MyJobsPage = () => {
                     <p>No proposals yet.</p>
                   ) : (
                     proposals[job.id].map((proposal) => (
-                      <div key={proposal.id} className="bg-gray-100 p-3 rounded mb-2">
+                      <div
+                        key={proposal.id}
+                        className="bg-gray-100 p-3 rounded mb-2"
+                      >
                         <p>
-                          <strong>Freelancer:</strong> {proposal.freelancerName || 'Unknown'}
+                          <strong>Freelancer:</strong> {proposal.freelancerName || "Unknown"}
                         </p>
                         <p>
                           <strong>Status:</strong> {proposal.status}
                         </p>
                         <p>
-                          <strong>Submitted At:</strong>{' '}
+                          <strong>Submitted At:</strong>{" "}
                           {proposal.submittedAt
                             ? new Date(proposal.submittedAt.seconds * 1000).toLocaleString()
-                            : 'Unknown'}
+                            : "Unknown"}
                         </p>
                         <div className="mt-2 flex gap-2">
-                          {proposal.status === 'pending' && (
+                          {proposal.status === "pending" && (
                             <>
                               <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
@@ -309,6 +294,15 @@ const MyJobsPage = () => {
                               </button>
                             </>
                           )}
+                          {/* Chat Button */}
+                          <button
+                            className="bg-indigo-500 text-white px-4 py-2 rounded"
+                            onClick={() =>
+                              handleChatWithFreelancer(proposal.freelancerId, proposal.freelancerName)
+                            }
+                          >
+                            Chat
+                          </button>
                         </div>
                       </div>
                     ))
