@@ -1,19 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaHistory, FaSearch, FaFilter } from 'react-icons/fa';
+import { getTransactionHistory } from '../services/walletService';
+import { useAuth } from '../context/FirebaseAuthContext';
 
 export default function TransactionHistoryPage() {
+  const { currentUser } = useAuth();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // Mock transaction data
-  const transactions = [
-    { id: 1, type: 'funding', amount: 5000, date: '2023-05-01', description: 'Wallet Funding' },
-    { id: 2, type: 'transfer', amount: -1000, date: '2023-05-03', description: 'Transfer to John Doe' },
-    { id: 3, type: 'withdrawal', amount: -2000, date: '2023-05-05', description: 'Withdrawal to Bank Account' },
-    { id: 4, type: 'escrow', amount: -1500, date: '2023-05-07', description: 'Escrow Payment for Project X' },
-  ];
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const history = await getTransactionHistory(currentUser.uid);
+        setTransactions(history);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch transaction history');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [currentUser]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());

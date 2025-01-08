@@ -25,6 +25,10 @@ import FundWalletPage from './pages/FundWalletPage';
 import WithdrawFundsPage from './pages/WithdrawFundsPage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage';
 import KYCPage from './pages/KYCPage';
+import MilestonesPage from './pages/MilestonesPage';
+import AdminPage from './pages/AdminPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminSignupPage from './pages/AdminSignupPage';
 
 const App = () => {
   const location = useLocation();
@@ -59,6 +63,16 @@ const App = () => {
           <Route path="withdraw-funds" element={<WithdrawFundsPage />} />
           <Route path="transactions" element={<TransactionHistoryPage />} />
           <Route path="kyc" element={<KYCPage />} />
+          <Route path="/jobs/:jobId/milestones" element={<MilestonesPage />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminPage />
+               </ProtectedRoute>
+            } 
+          />
+          <Route path="/admin-signup" element={<AdminSignupPage />} />
         </Routes>
       </main>
       {shouldShowFooter && <Footer />}

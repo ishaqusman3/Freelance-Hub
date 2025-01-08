@@ -88,37 +88,37 @@ import {
 
 //   return newChatRef.id;
 // };
-export const getOrCreateChat = async (user1Id, user2Id, user1Name, user2Name) => {
-  const chatsRef = collection(db, 'chats');
-
-  // Query for existing chat
-  const chatQuery = query(chatsRef, where('participants', 'array-contains', user1Id));
-  const chatSnapshot = await getDocs(chatQuery);
-
-  let existingChat = null;
-  chatSnapshot.forEach((doc) => {
-    const data = doc.data();
-    if (data.participants.includes(user2Id)) {
-      existingChat = { id: doc.id, ...data };
+export const getOrCreateChat = async (clientId, freelancerId, clientName, freelancerName, jobId) => {
+  try {
+    // Check for existing chat
+    const chatsRef = collection(db, "chats");
+    const q = query(chatsRef, 
+      where("participants", "array-contains", clientId),
+      where("freelancerId", "==", freelancerId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].id;
     }
-  });
 
-  // Return existing chat ID if found
-  if (existingChat) {
-    return existingChat.id;
+    // Create new chat if none exists
+    const chatRef = await addDoc(collection(db, "chats"), {
+      participants: [clientId, freelancerId],
+      clientId,
+      freelancerId,
+      clientName,
+      freelancerName,
+      jobId, // Add jobId to chat document
+      createdAt: serverTimestamp()
+    });
+
+    return chatRef.id;
+  } catch (error) {
+    console.error("Error in getOrCreateChat:", error);
+    throw error;
   }
-
-  // Create a new chat if no existing one is found
-  const newChatRef = doc(chatsRef); // Create a reference for the new chat
-  const chatData = {
-    participants: [user1Id, user2Id],
-    participantNames: [user1Name, user2Name],
-    lastMessage: '',
-    lastMessageTimestamp: serverTimestamp(),
-  };
-  await setDoc(newChatRef, chatData); // Save the chat data
-
-  return newChatRef.id;
 };
 
 /**

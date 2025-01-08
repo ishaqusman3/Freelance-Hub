@@ -1,86 +1,5 @@
-// import { db } from '../firebase/firebaseConfig';
-// import { collection, addDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
-
-// // Create a new job
-// export const createJob = async (jobData) => {
-//   const jobRef = collection(db, 'jobs');
-//   const jobDoc = await addDoc(jobRef, jobData);
-//   return jobDoc.id; // Return the document ID of the new job
-// };
-
-// // Get all jobs
-// export const getAllJobs = async () => {
-//   const jobRef = collection(db, 'jobs');
-//   const jobSnapshot = await getDocs(jobRef);
-//   return jobSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// };
-
-// // Delete a job
-// export const deleteJob = async (jobId) => {
-//   const jobRef = doc(db, 'jobs', jobId);
-//   await deleteDoc(jobRef);
-// };
-
-// import { db } from '../firebase/firebaseConfig';
-// import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where } from 'firebase/firestore';
-
-// /**
-//  * Create a new job in Firestore.
-//  * @param {object} jobData - The job data to store.
-//  * @returns {string} - The document ID of the new job.
-//  */
-// export const createJob = async (jobData) => {
-//   const jobRef = collection(db, 'jobs');
-//   const jobDoc = await addDoc(jobRef, jobData);
-//   return jobDoc.id; // Return the document ID of the new job
-// };
-
-// /**
-//  * Get all jobs from Firestore.
-//  * @returns {array} - An array of all job documents.
-//  */
-// export const getAllJobs = async () => {
-//   const jobRef = collection(db, 'jobs');
-//   const jobSnapshot = await getDocs(jobRef);
-//   return jobSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// };
-
-// /**
-//  * Delete a job from Firestore.
-//  * @param {string} jobId - The ID of the job to delete.
-//  */
-// export const deleteJob = async (jobId) => {
-//   const jobRef = doc(db, 'jobs', jobId);
-//   await deleteDoc(jobRef);
-// };
-
-// /**
-//  * Fetch jobs posted by a specific client.
-//  * @param {string} clientId - The ID of the client.
-//  * @returns {array} - An array of jobs posted by the client.
-//  */
-// export const getJobsByClient = async (clientId) => {
-//   const jobsRef = collection(db, 'jobs');
-//   const q = query(jobsRef, where('clientId', '==', clientId));
-//   const jobSnapshot = await getDocs(q);
-//   return jobSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// };
-
-// /**
-//  * Fetch a job by its ID.
-//  * @param {string} jobId - The ID of the job to fetch.
-//  * @returns {object} - The job data.
-//  */
-// export const getJobById = async (jobId) => {
-//   const jobRef = doc(db, 'jobs', jobId);
-//   const jobDoc = await getDoc(jobRef);
-//   if (!jobDoc.exists()) {
-//     throw new Error('Job not found');
-//   }
-//   return { id: jobDoc.id, ...jobDoc.data() };
-// };
 import { db } from '../firebase/firebaseConfig';
-import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 /**
  * Create a new job in Firestore.
@@ -89,18 +8,55 @@ import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where } fro
  */
 export const createJob = async (jobData) => {
   const jobRef = collection(db, 'jobs');
-  const jobDoc = await addDoc(jobRef, jobData);
-  return jobDoc.id; // Return the document ID of the new job
+  const jobDoc = await addDoc(jobRef, {
+    ...jobData,
+    status: 'open',
+    createdAt: serverTimestamp(),
+    postedAt: serverTimestamp(),
+    datePosted: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return jobDoc.id;
 };
+
 
 /**
  * Get all jobs from Firestore.
  * @returns {array} - An array of all job documents.
  */
 export const getAllJobs = async () => {
-  const jobRef = collection(db, 'jobs');
-  const jobSnapshot = await getDocs(jobRef);
-  return jobSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  try {
+    const jobRef = collection(db, 'jobs');
+    const jobSnapshot = await getDocs(jobRef);
+    
+    // Map through jobs and format dates
+    const jobs = jobSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        datePosted: data.datePosted?.toDate(),
+        postedAt: data.postedAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+        assignedAt: data.assignedAt?.toDate(),
+        // Ensure these fields are always present
+        status: data.status || 'open',
+        freelancerName: data.freelancerName || 'Not Assigned',
+        freelancerId: data.freelancerId || null
+      };
+    });
+
+    // Sort jobs by posted date (newest first)
+    return jobs.sort((a, b) => {
+      const dateA = a.postedAt || a.createdAt || a.datePosted;
+      const dateB = b.postedAt || b.createdAt || b.datePosted;
+      return dateB - dateA;
+    });
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    return [];
+  }
 };
 
 /**
@@ -162,4 +118,36 @@ export const getTrendingSkills = async () => {
     .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
     .slice(0, 5)
     .map(([skill]) => skill); // Extract skill names
+};
+
+/**
+ * Update a job with freelancer information when proposal is accepted
+ */
+export const assignFreelancerToJob = async (jobId, freelancerData) => {
+  try {
+    if (!freelancerData.freelancerId || !freelancerData.freelancerName) {
+      throw new Error('Missing freelancer information');
+    }
+
+    const jobRef = doc(db, 'jobs', jobId);
+    const jobDoc = await getDoc(jobRef);
+    
+    if (!jobDoc.exists()) {
+      throw new Error('Job not found');
+    }
+
+    await updateDoc(jobRef, {
+      freelancerId: freelancerData.freelancerId,
+      freelancerName: freelancerData.freelancerName,
+      status: 'in_progress',
+      updatedAt: serverTimestamp(),
+      assignedAt: serverTimestamp(),
+      contractStatus: 'active'
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error assigning freelancer to job:', error);
+    throw error;
+  }
 };

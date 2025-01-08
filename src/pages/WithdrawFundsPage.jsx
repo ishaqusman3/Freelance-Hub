@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { FaExchangeAlt, FaPlusCircle } from 'react-icons/fa';
+import { initiateWithdrawal } from '../services/walletService';
+import { useAuth } from '../context/FirebaseAuthContext';
 
 export default function WithdrawFundsPage() {
+  const { currentUser } = useAuth();
   const [amount, setAmount] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [error, setError] = useState('');
 
   // Mock data for bank accounts
   const bankAccounts = [
@@ -20,11 +24,24 @@ export default function WithdrawFundsPage() {
 
   const confirmWithdrawal = async () => {
     setIsLoading(true);
-    // TODO: Implement actual withdrawal logic
-    setTimeout(() => {
+    setError('');
+
+    try {
+      await initiateWithdrawal({
+        amount: parseFloat(amount),
+        userId: currentUser.uid,
+        bankAccountId: selectedBank
+      });
+      
+      // Show success message and reset form
+      setShowConfirmation(false);
+      setAmount('');
+      setSelectedBank('');
+    } catch (err) {
+      setError(err.message || 'Failed to process withdrawal');
+    } finally {
       setIsLoading(false);
-      // TODO: Handle success or error
-    }, 2000);
+    }
   };
 
   return (

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/FirebaseAuthContext';
-import { FaBars, FaTimes, FaHome, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaBars, FaTimes, FaHome, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaUserShield } from 'react-icons/fa';
 
 const Header = () => {
   const { currentUser, userData, logOut } = useAuth();
@@ -43,6 +43,12 @@ const Header = () => {
       {getInitials(userData?.fullName)}
     </div>
   );
+
+  console.log('Header Check:', {
+    currentUser: !!currentUser,
+    userData,
+    isAdmin: userData?.isAdmin
+  });
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-700 text-white shadow-lg fixed top-0 left-0 right-0 z-50">
@@ -92,6 +98,18 @@ const Header = () => {
                   <FaSignOutAlt className="mr-2" /> Logout
                 </button>
                 {profileContent}
+                {currentUser && userData?.isAdmin && (
+                  <NavLink 
+                    to="/admin" 
+                    className={({ isActive }) => `
+                      flex items-center hover:text-purple-200 transition duration-300
+                      ${isActive ? 'text-purple-200' : ''}
+                    `}
+                  >
+                    <FaUserShield className="mr-2" />
+                    Admin Panel
+                  </NavLink>
+                )}
               </>
             )}
           </nav>

@@ -3,38 +3,60 @@ import { db } from '../firebase/firebaseConfig';
 import { doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 /**
- * Add or update a user in Firestore.
- * @param {string} uid - The user ID.
- * @param {object} userData - The user data to store.
+ * Add a new user to Firestore
+ * @param {string} userId - The user's ID from Firebase Auth
+ * @param {object} userData - The user data to store
  */
-export const addUserToFirestore = async (uid, userData) => {
-  const userRef = doc(db, 'users', uid);
-  await setDoc(userRef, userData, { merge: true }); // Merge to avoid overwriting existing data
-};
-
-/**
- * Get a user's data from Firestore.
- * @param {string} uid - The user ID.
- * @returns {object} - The user's data.
- */
-export const getUserFromFirestore = async (uid) => {
-  const userRef = doc(db, 'users', uid);
-  const userDoc = await getDoc(userRef);
-  if (userDoc.exists()) {
-    return userDoc.data();
-  } else {
-    throw new Error('User does not exist');
+export const addUserToFirestore = async (userId, userData) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await setDoc(userRef, {
+      ...userData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error adding user to Firestore:', error);
+    throw error;
   }
 };
 
 /**
- * Update a user's data in Firestore.
- * @param {string} uid - The user ID.
- * @param {object} updatedData - The new data to update.
+ * Get user data from Firestore
+ * @param {string} userId - The user's ID
  */
-export const updateUserInFirestore = async (uid, updatedData) => {
-  const userRef = doc(db, 'users', uid);
-  await updateDoc(userRef, updatedData);
+export const getUserFromFirestore = async (userId) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      throw new Error('User not found');
+    }
+
+    return userDoc.data();
+  } catch (error) {
+    console.error('Error getting user from Firestore:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update user data in Firestore
+ * @param {string} userId - The user's ID
+ * @param {object} updateData - The data to update
+ */
+export const updateUserInFirestore = async (userId, updateData) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      ...updateData,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error updating user in Firestore:', error);
+    throw error;
+  }
 };
 
 /**
