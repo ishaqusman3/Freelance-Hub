@@ -7,6 +7,8 @@ import { getTrendingSkills } from "../services/jobService";
 import { Link } from "react-router-dom";
 import WalletBalance from "../components/WalletBalance";
 import { FaUser, FaSearch, FaFileAlt, FaComments, FaUserCircle, FaPencilAlt, FaChartBar, FaIdCard, FaMoneyBillWave, FaExchangeAlt, FaHistory, FaChartLine, FaStar, FaEdit, FaUsers, FaBriefcase, FaUserShield, FaCog, FaEye, FaTrash, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import Loader from "../components/Loader";
+import { showNotification } from '../utils/notification';
 
 const HomePage = () => {
   const { currentUser, userData, isAdmin } = useAuth();
@@ -77,7 +79,7 @@ const HomePage = () => {
         setWalletBalance(1000);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        setError("Failed to load data. Please try again later.");
+        showNotification.error("Failed to load data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -122,7 +124,7 @@ const HomePage = () => {
   }, [isAdmin]);
 
   if (loading) {
-    return <div className="text-center mt-8">Loading...</div>;
+    return <Loader loading={loading} />;
   }
 
   if (error) {
@@ -307,7 +309,7 @@ const HomePage = () => {
                     <QuickActionCard to="/post-job" title="Post a Job" icon={<FaPencilAlt />} />
                     <QuickActionCard to="/my-jobs" title="My Jobs" icon={<FaChartBar />} />
                     <QuickActionCard to="/messages" title="Messages" icon={<FaComments />} />
-                    <QuickActionCard to="/find-freelancers" title="Find Freelancers" icon={<FaSearch />} />
+                    <QuickActionCard to="/profile" title="Update Profile" icon={<FaUserCircle />} />
                     <QuickActionCard to="/kyc" title="KYC Verification" icon={<FaIdCard />} />
                   </>
                 )}

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FaExchangeAlt, FaPlusCircle } from 'react-icons/fa';
 import { initiateWithdrawal } from '../services/walletService';
 import { useAuth } from '../context/FirebaseAuthContext';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 export default function WithdrawFundsPage() {
   const { currentUser } = useAuth();
@@ -37,8 +39,10 @@ export default function WithdrawFundsPage() {
       setShowConfirmation(false);
       setAmount('');
       setSelectedBank('');
+      showNotification.success('Withdrawal initiated successfully');
     } catch (err) {
       setError(err.message || 'Failed to process withdrawal');
+      showNotification.error(err.message || 'Failed to process withdrawal');
     } finally {
       setIsLoading(false);
     }
@@ -126,6 +130,8 @@ export default function WithdrawFundsPage() {
             </div>
           </div>
         )}
+
+        {isLoading && <Loader loading={isLoading} />}
       </div>
     </div>
   );

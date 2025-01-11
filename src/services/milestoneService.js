@@ -31,14 +31,20 @@ export const createMilestones = async (jobId, milestones) => {
  * @returns {Promise<Array>} - List of milestones.
  */
 export const getMilestones = async (jobId) => {
-  const milestonesRef = collection(db, `jobs/${jobId}/milestones`);
-  const snapshot = await getDocs(milestonesRef);
+  try {
+    const milestonesRef = collection(db, `jobs/${jobId}/milestones`);
+    const snapshot = await getDocs(milestonesRef);
 
-  if (snapshot.empty) {
-    throw new Error('No milestones found for this job.');
+    // Return empty array instead of throwing error when no milestones exist
+    if (snapshot.empty) {
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching milestones:', error);
+    throw error;
   }
-
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 /**

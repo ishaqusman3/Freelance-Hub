@@ -4,6 +4,8 @@ import { db } from "../firebase/firebaseConfig";
 import { useAuth } from '../context/FirebaseAuthContext';
 import { FaPaperPlane, FaMoneyBillWave, FaTasks } from 'react-icons/fa';
 import { useParams, Link } from 'react-router-dom';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 export default function DirectMessagingPage() {
   const { chatId } = useParams();
@@ -14,6 +16,7 @@ export default function DirectMessagingPage() {
   const [jobId, setJobId] = useState(null);
   const { currentUser, userData } = useAuth();
   const messagesEndRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!chatId) return;
@@ -47,17 +50,22 @@ export default function DirectMessagingPage() {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
-  
-    const senderName = userData?.fullName || currentUser.displayName || 'Anonymous';
-  
-    await addDoc(collection(db, "chats", chatId, "messages"), {
-      text: newMessage,
-      senderId: currentUser.uid,
-      senderName: senderName,
-      timestamp: serverTimestamp(),
-    });
-  
-    setNewMessage('');
+
+    try {
+      const senderName = userData?.fullName || currentUser.displayName || 'Anonymous';
+      
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        text: newMessage,
+        senderId: currentUser.uid,
+        senderName: senderName,
+        timestamp: serverTimestamp(),
+      });
+      
+      setNewMessage('');
+    } catch (err) {
+      console.error('Error sending message:', err);
+      showNotification.error('Failed to send message');
+    }
   };
 
   const handlePayFreelancer = () => {
@@ -77,8 +85,8 @@ export default function DirectMessagingPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-r from-blue-600 to-purple-700">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gradient-to-r from-blue-600 to-purple-700">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -103,7 +111,7 @@ export default function DirectMessagingPage() {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className="bg-white p-4 shadow-lg">
+      <div className="bg-white p-4 shadow-lg fixed bottom-0 left-0 right-0">
         <div className="flex justify-between items-center mb-4">
           {userData.role === 'client' && (
             <button
@@ -111,7 +119,7 @@ export default function DirectMessagingPage() {
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300 flex items-center"
             >
               <FaMoneyBillWave className="mr-2" />
-              Pay Freelancer
+              Pay Freelancer (₦)
             </button>
           )}
           {jobId && (
@@ -170,6 +178,8 @@ export default function DirectMessagingPage() {
           </div>
         </div>
       )}
+
+      {loading && <Loader loading={loading} />}
     </div>
   );
 }

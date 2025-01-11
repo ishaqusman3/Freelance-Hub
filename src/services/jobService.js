@@ -6,15 +6,29 @@ import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where, upda
  * @param {object} jobData - The job data to store.
  * @returns {string} - The document ID of the new job.
  */
+// export const createJob = async (jobData) => {
+//   const jobRef = collection(db, 'jobs');
+//   const jobDoc = await addDoc(jobRef, {
+//     ...jobData,
+//     status: 'open',
+//     createdAt: serverTimestamp(),
+//     postedAt: serverTimestamp(),
+//     datePosted: serverTimestamp(),
+//     updatedAt: serverTimestamp()
+//   });
+//   return jobDoc.id;
+// };
 export const createJob = async (jobData) => {
+  if (!Array.isArray(jobData.technologiesRequired)) {
+    jobData.technologiesRequired = []; // Default to empty array if not provided
+  }
+
   const jobRef = collection(db, 'jobs');
   const jobDoc = await addDoc(jobRef, {
     ...jobData,
     status: 'open',
     createdAt: serverTimestamp(),
-    postedAt: serverTimestamp(),
-    datePosted: serverTimestamp(),
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   });
   return jobDoc.id;
 };
@@ -35,27 +49,33 @@ export const getAllJobs = async () => {
       return {
         id: doc.id,
         ...data,
+        // Fix: Handle both array and string formats for technologies
+        technologiesRequired: Array.isArray(data.technologiesRequired) 
+          ? data.technologiesRequired 
+          : data.technologiesRequired?.split(',').map(tech => tech.trim()) || [],
+        // Fix: Properly handle timestamp conversions
         createdAt: data.createdAt?.toDate(),
-        datePosted: data.datePosted?.toDate(),
         postedAt: data.postedAt?.toDate(),
         updatedAt: data.updatedAt?.toDate(),
         assignedAt: data.assignedAt?.toDate(),
         // Ensure these fields are always present
         status: data.status || 'open',
         freelancerName: data.freelancerName || 'Not Assigned',
-        freelancerId: data.freelancerId || null
+        freelancerId: data.freelancerId || null,
+        // Ensure budget is a number
+        budget: parseFloat(data.budget) || 0
       };
     });
 
     // Sort jobs by posted date (newest first)
     return jobs.sort((a, b) => {
-      const dateA = a.postedAt || a.createdAt || a.datePosted;
-      const dateB = b.postedAt || b.createdAt || b.datePosted;
-      return dateB - dateA;
+      const dateA = a.postedAt || a.createdAt;
+      const dateB = b.postedAt || b.createdAt;
+      return (dateB || 0) - (dateA || 0);
     });
   } catch (error) {
     console.error('Error fetching jobs:', error);
-    return [];
+    throw error; // Changed to throw error instead of returning empty array
   }
 };
 
@@ -151,3 +171,4 @@ export const assignFreelancerToJob = async (jobId, freelancerData) => {
     throw error;
   }
 };
+

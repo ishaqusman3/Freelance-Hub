@@ -15,6 +15,8 @@ import {
 } from 'react-icons/fa';
 import AdminManagement from '../components/AdminManagement';
 import { getAllUsers, getAdminStats, getAdminActivities } from '../services/adminService';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 const AdminPage = () => {
   const { currentUser, userData } = useAuth();
@@ -59,8 +61,7 @@ const AdminPage = () => {
         setJobs(fetchedJobs);
         setKycRequests(fetchedKYC);
       } catch (err) {
-        setError('Failed to load admin data');
-        console.error(err);
+        showNotification.error(err.message || 'Failed to load admin data');
       } finally {
         setLoading(false);
       }
@@ -102,7 +103,7 @@ const AdminPage = () => {
     }
   };
 
-  if (loading) return <div className="text-center mt-8">Loading...</div>;
+  if (loading) return <Loader loading={loading} />;
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (

@@ -9,114 +9,59 @@ import {
   getDocs, 
   setDoc, 
   serverTimestamp, 
-  updateDoc 
+  updateDoc, 
+  or, 
+  and,
+  orderBy
 } from 'firebase/firestore';
 
 /**
- * Create or get a chat between two users.
- * @param {string} user1Id - The first user's ID.
- * @param {string} user2Id - The second user's ID.
- * @param {string} user1Name - The first user's name.
- * @param {string} user2Name - The second user's name.
+ * Create or get a chat between a client and freelancer.
+ * @param {string} clientId - The client's ID.
+ * @param {string} freelancerId - The freelancer's ID.
+ * @param {string} clientName - The client's name.
+ * @param {string} freelancerName - The freelancer's name.
  * @returns {string} - The chat ID.
-*/
-// export const getOrCreateChat = async (user1Id, user2Id, user1Name, user2Name) => {
-//   const chatsRef = collection(db, 'chats');
-
-//   // Query for existing chat
-//   const chatQuery = query(chatsRef, where('participants', 'array-contains', user1Id));
-//   const chatSnapshot = await getDocs(chatQuery);
-
-//   let existingChat = null;
-//   chatSnapshot.forEach((doc) => {
-//     const data = doc.data();
-//     if (data.participants.includes(user2Id)) {
-//       existingChat = { id: doc.id, ...data };
-//     }
-//   });
-
-//   // Return existing chat ID if found
-//   if (existingChat) {
-//     return existingChat.id;
-//   }
-
-//   // Create a new chat if no existing one is found
-//   const newChatRef = doc(chatsRef);
-//   const chatData = {
-//     participants: [user1Id, user2Id],
-//     participantNames: [user1Name, user2Name],
-//     lastMessage: '',
-//     lastMessageTimestamp: serverTimestamp(),
-//   };
-//   await setDoc(newChatRef, chatData);
-
-//   return newChatRef.id;
-// };
-// export const getOrCreateChat = async (user1Id, user2Id, user1Name, user2Name) => {
-//   const chatsRef = collection(db, 'chats');
-  
-//   // Query for an existing chat between the two users
-//   const chatQuery = query(
-//     chatsRef,
-//     where('participants', 'array-contains', user1Id)
-//   );
-//   const chatSnapshot = await getDocs(chatQuery);
-
-//   // Find if a chat already exists
-//   let existingChat = null;
-//   chatSnapshot.forEach((doc) => {
-//     const data = doc.data();
-//     if (data.participants.includes(user2Id)) {
-//       existingChat = { id: doc.id, ...data };
-//     }
-//   });
-
-//   // Return the existing chat ID if found
-//   if (existingChat) {
-//     return existingChat.id;
-//   }
-
-//   // Create a new chat if no existing one is found
-//   const newChatRef = doc(chatsRef);
-//   const chatData = {
-//     participants: [user1Id, user2Id],
-//     participantNames: [user1Name, user2Name],
-//     lastMessage: '',
-//     lastMessageTimestamp: serverTimestamp(),
-//   };
-//   await setDoc(newChatRef, chatData);
-
-//   return newChatRef.id;
-// };
-export const getOrCreateChat = async (clientId, freelancerId, clientName, freelancerName, jobId) => {
+ */
+export const getOrCreateChat = async ({ clientId, freelancerId, clientName, freelancerName }) => {
   try {
-    // Check for existing chat
-    const chatsRef = collection(db, "chats");
-    const q = query(chatsRef, 
-      where("participants", "array-contains", clientId),
-      where("freelancerId", "==", freelancerId)
+    // First, check if a chat already exists between these users
+    const chatsRef = collection(db, 'chats');
+    const q = query(
+      chatsRef,
+      or(
+        and(
+          where('clientId', '==', clientId),
+          where('freelancerId', '==', freelancerId)
+        ),
+        and(
+          where('clientId', '==', freelancerId),
+          where('freelancerId', '==', clientId)
+        )
+      )
     );
-    
+
     const querySnapshot = await getDocs(q);
-    
+
+    // If chat exists, return its ID
     if (!querySnapshot.empty) {
       return querySnapshot.docs[0].id;
     }
 
-    // Create new chat if none exists
-    const chatRef = await addDoc(collection(db, "chats"), {
-      participants: [clientId, freelancerId],
+    // If no chat exists, create a new one
+    const newChat = await addDoc(chatsRef, {
       clientId,
       freelancerId,
       clientName,
       freelancerName,
-      jobId, // Add jobId to chat document
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      lastMessage: null,
+      lastMessageTime: null
     });
 
-    return chatRef.id;
+    return newChat.id;
   } catch (error) {
-    console.error("Error in getOrCreateChat:", error);
+    console.error('Error in getOrCreateChat:', error);
     throw error;
   }
 };

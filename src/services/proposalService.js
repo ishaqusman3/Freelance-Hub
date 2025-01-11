@@ -20,6 +20,33 @@ export const getProposalsByFreelancer = async (freelancerId) => {
  * @param {object} proposal - Proposal data.
  * @returns {string} - The document ID of the new proposal.
  */
+// export const createProposal = async (proposal) => {
+//   if (!proposal.freelancerId || !proposal.jobId) {
+//     throw new Error('Invalid proposal data: freelancerId or jobId is missing.');
+//   }
+
+//   const jobRef = doc(db, 'jobs', proposal.jobId);
+//   const jobDoc = await getDoc(jobRef);
+
+//   if (!jobDoc.exists()) {
+//     throw new Error('Job does not exist.');
+//   }
+
+//   const jobData = jobDoc.data();
+
+//   if (!jobData.clientId) {
+//     throw new Error('Job is missing clientId.');
+//   }
+
+//   const proposalsRef = collection(db, 'proposals');
+//   const proposalDoc = await addDoc(proposalsRef, {
+//     ...proposal,
+//     clientId: jobData.clientId,
+//     submittedAt: new Date(),
+//   });
+
+//   return proposalDoc.id;
+// };
 export const createProposal = async (proposal) => {
   if (!proposal.freelancerId || !proposal.jobId) {
     throw new Error('Invalid proposal data: freelancerId or jobId is missing.');
@@ -42,7 +69,11 @@ export const createProposal = async (proposal) => {
   const proposalDoc = await addDoc(proposalsRef, {
     ...proposal,
     clientId: jobData.clientId,
-    submittedAt: new Date(),
+    status: 'pending',
+    submittedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    proposedAmount: parseFloat(proposal.proposedAmount) || 0,
+    completionDate: proposal.completionDate ? new Date(proposal.completionDate) : null
   });
 
   return proposalDoc.id;
@@ -72,7 +103,7 @@ export const declineProposal = async (proposalId) => {
 /**
  * Accept a proposal and update job
  */
-export const acceptProposal = async (proposalId, jobId, milestones) => {
+export const acceptProposal = async (proposalId, jobId) => {
   try {
     // Get proposal data first
     const proposalRef = doc(db, 'proposals', proposalId);
@@ -84,6 +115,55 @@ export const acceptProposal = async (proposalId, jobId, milestones) => {
 
     const proposalData = proposalSnap.data();
 
+    // Get job data to calculate milestones
+    const jobRef = doc(db, 'jobs', jobId);
+    const jobDoc = await getDoc(jobRef);
+    
+    if (!jobDoc.exists()) {
+      throw new Error('Job not found');
+    }
+
+    const jobData = jobDoc.data();
+    const totalBudget = parseFloat(jobData.budget);
+    
+    // Create default milestones if none provided
+    const defaultMilestones = [
+      {
+        name: 'Project Initiation',
+        description: 'Initial setup and project planning',
+        payment: Math.floor(totalBudget * 0.3), // 30% of total budget
+        dueDate: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000)).toISOString(), // 7 days from now
+        status: 'pending',
+        isPaid: false
+      },
+      {
+        name: 'Development Phase',
+        description: 'Main development work and implementation',
+        payment: Math.floor(totalBudget * 0.4), // 40% of total budget
+        dueDate: new Date(Date.now() + (14 * 24 * 60 * 60 * 1000)).toISOString(), // 14 days from now
+        status: 'pending',
+        isPaid: false
+      },
+      {
+        name: 'Project Completion',
+        description: 'Final delivery and project handover',
+        payment: Math.floor(totalBudget * 0.3), // 30% of total budget
+        dueDate: new Date(Date.now() + (21 * 24 * 60 * 60 * 1000)).toISOString(), // 21 days from now
+        status: 'pending',
+        isPaid: false
+      }
+    ];
+
+    // Create milestones
+    await createMilestones(jobId, defaultMilestones);
+
+    // Update proposal status
+    await updateDoc(proposalRef, { 
+      status: 'accepted',
+      acceptedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
     // Get freelancer data
     const freelancerRef = doc(db, 'users', proposalData.freelancerId);
     const freelancerSnap = await getDoc(freelancerRef);
@@ -94,23 +174,6 @@ export const acceptProposal = async (proposalId, jobId, milestones) => {
 
     const freelancerData = freelancerSnap.data();
     const freelancerName = freelancerData.fullName || freelancerData.displayName;
-
-    // Get job data
-    const jobRef = doc(db, 'jobs', jobId);
-    const jobDoc = await getDoc(jobRef);
-    
-    if (!jobDoc.exists()) {
-      throw new Error('Job not found');
-    }
-
-    const jobData = jobDoc.data();
-
-    // Update proposal status
-    await updateDoc(proposalRef, { 
-      status: 'accepted',
-      acceptedAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
 
     // Update job with freelancer information and status
     await updateDoc(jobRef, {
@@ -131,7 +194,7 @@ export const acceptProposal = async (proposalId, jobId, milestones) => {
     
     const otherProposalsSnap = await getDocs(otherProposalsQuery);
     const updatePromises = otherProposalsSnap.docs
-      .filter(doc => doc.id !== proposalId) // Don't decline the accepted proposal
+      .filter(doc => doc.id !== proposalId)
       .map(doc => 
         updateDoc(doc.ref, { 
           status: 'declined',
@@ -151,7 +214,7 @@ export const acceptProposal = async (proposalId, jobId, milestones) => {
       status: 'active',
       createdAt: serverTimestamp(),
       proposalId: proposalId,
-      milestones: milestones || [],
+      milestones: defaultMilestones,
       jobTitle: jobData.title,
       budget: jobData.budget,
       updatedAt: serverTimestamp()

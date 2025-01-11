@@ -13,6 +13,8 @@ import {
   FaEye, 
   FaEyeSlash 
 } from 'react-icons/fa';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -78,10 +80,10 @@ const SignupPage = () => {
       await createWallet(user.uid, formData.fullName, formData.email);
 
       // 5. Navigate to home page
+      showNotification.success('Account created successfully!');
       navigate('/home');
     } catch (err) {
-      setError(err.message || 'Failed to create account');
-      console.error('Signup error:', err);
+      showNotification.error(err.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -262,6 +264,7 @@ const SignupPage = () => {
           </Link>
         </p>
       </div>
+      {loading && <Loader loading={loading} />}
     </div>
   );
 };

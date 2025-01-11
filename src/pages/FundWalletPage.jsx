@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FaMoneyBillWave } from 'react-icons/fa';
 import { initializePayment } from '../services/walletService';
 import { useAuth } from '../context/FirebaseAuthContext';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 export default function FundWalletPage() {
   const [amount, setAmount] = useState('');
@@ -22,10 +24,10 @@ export default function FundWalletPage() {
         email: currentUser.email
       });
 
-      // Redirect to Monnify payment page
+      showNotification.success('Payment initialized successfully');
       window.location.href = paymentResponse.checkoutUrl;
     } catch (err) {
-      setError(err.message || 'Failed to initiate payment');
+      showNotification.error(err.message || 'Failed to initiate payment');
       setIsLoading(false);
     }
   };
@@ -95,6 +97,7 @@ export default function FundWalletPage() {
             )}
           </button>
         </form>
+        {isLoading && <Loader loading={isLoading} />}
       </div>
     </div>
   );

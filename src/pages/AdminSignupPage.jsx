@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/FirebaseAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FaUserShield } from 'react-icons/fa';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 const AdminSignupPage = () => {
   const [email, setEmail] = useState('');
@@ -18,11 +20,13 @@ const AdminSignupPage = () => {
       setError('');
       setLoading(true);
       await signUp(email, password, fullName, true); // Pass true for isAdmin
+      showNotification.success('Admin account created successfully!');
       navigate('/admin');
     } catch (err) {
-      setError('Failed to create admin account: ' + err.message);
+      showNotification.error(err.message || 'Failed to create admin account');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

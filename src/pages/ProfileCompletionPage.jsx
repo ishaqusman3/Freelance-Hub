@@ -1,139 +1,11 @@
-// import React, { useState } from 'react';
-// import { useAuth } from '../context/FirebaseAuthContext';
-// import { useNavigate } from 'react-router-dom';
-// import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-// import { db } from '../firebase/firebaseConfig';
-
-// const ProfileCompletionPage = () => {
-//   const { currentUser } = useAuth();
-//   const [role, setRole] = useState('');
-//   const [location, setLocation] = useState('');
-//   const [skills, setSkills] = useState('');
-//   const [error, setError] = useState('');
-//   const navigate = useNavigate();
-
-//   const nigerianStates = [
-//     'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-//     'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa',
-//     'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger',
-//     'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
-//     'Federal Capital Territory',
-//   ];
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setError('');
-
-//     if (!role || !location) {
-//       setError("Please fill in all required fields.");
-//       return;
-//     }
-
-//     try {
-//       const userDocRef = doc(db, 'users', currentUser.uid);
-
-//       // Check if the document exists
-//       const userDoc = await getDoc(userDocRef);
-//       if (userDoc.exists()) {
-//         // Update existing document
-//         await updateDoc(userDocRef, {
-//           role,
-//           location,
-//           skills: role === 'freelancer' ? skills : null,
-//         });
-//         console.log("Profile updated successfully");
-//       } else {
-//         // Create the document if it doesn't exist
-//         await setDoc(userDocRef, {
-//           fullName: currentUser.displayName || '',
-//           email: currentUser.email || '',
-//           role,
-//           location,
-//           skills: role === 'freelancer' ? skills : null,
-//         });
-//         console.log("Profile created successfully");
-//       }
-
-//       navigate('/home');
-//     } catch (err) {
-//       console.error("Error updating profile:", err);
-//       setError("Failed to update profile. Please try again.");
-//     }
-//   };
-
-//   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-//       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-//         <h2 className="text-2xl font-bold text-center text-purple-600 mb-6">Complete Your Profile</h2>
-        
-//         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           {/* Role Field */}
-//           <div>
-//             <label className="block text-gray-700">Role</label>
-//             <select
-//               value={role}
-//               onChange={(e) => setRole(e.target.value)}
-//               required
-//               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-//             >
-//               <option value="">Select Role</option>
-//               <option value="client">Client</option>
-//               <option value="freelancer">Freelancer</option>
-//             </select>
-//           </div>
-
-//           {/* Location Dropdown */}
-//           <div>
-//             <label className="block text-gray-700">Location</label>
-//             <select
-//               value={location}
-//               onChange={(e) => setLocation(e.target.value)}
-//               required
-//               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-//             >
-//               <option value="">Select your state</option>
-//               {nigerianStates.map((state) => (
-//                 <option key={state} value={state}>{state}</option>
-//               ))}
-//             </select>
-//           </div>
-
-//           {/* Skills Field (For Freelancers Only) */}
-//           {role === 'freelancer' && (
-//             <div>
-//               <label className="block text-gray-700">Skills</label>
-//               <input
-//                 type="text"
-//                 value={skills}
-//                 onChange={(e) => setSkills(e.target.value)}
-//                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-//                 placeholder="Enter your skills (comma-separated)"
-//               />
-//             </div>
-//           )}
-
-//           {/* Submit Button */}
-//           <button
-//             type="submit"
-//             className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
-//           >
-//             Save Profile
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ProfileCompletionPage;
 import React, { useState } from 'react';
 import { useAuth } from '../context/FirebaseAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { FaUser, FaMapMarkerAlt, FaTools } from 'react-icons/fa';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
 
 const ProfileCompletionPage = () => {
   const { currentUser } = useAuth();
@@ -142,6 +14,7 @@ const ProfileCompletionPage = () => {
   const [skills, setSkills] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const nigerianStates = [
     'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
@@ -154,9 +27,11 @@ const ProfileCompletionPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     if (!role || !location) {
       setError("Please fill in all required fields.");
+      setLoading(false);
       return;
     }
 
@@ -172,7 +47,7 @@ const ProfileCompletionPage = () => {
           location,
           skills: role === 'freelancer' ? skills : null,
         });
-        console.log("Profile updated successfully");
+        showNotification.success('Profile updated successfully!');
       } else {
         // Create the document if it doesn't exist
         await setDoc(userDocRef, {
@@ -182,13 +57,15 @@ const ProfileCompletionPage = () => {
           location,
           skills: role === 'freelancer' ? skills : null,
         });
-        console.log("Profile created successfully");
+        showNotification.success('Profile created successfully!');
       }
 
       navigate('/home');
     } catch (err) {
       console.error("Error updating profile:", err);
-      setError("Failed to update profile. Please try again.");
+      showNotification.error('Failed to update profile');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -260,6 +137,7 @@ const ProfileCompletionPage = () => {
           </div>
         </form>
       </div>
+      {loading && <Loader loading={loading} />}
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { FirebaseAuthProvider } from './context/FirebaseAuthContext';
+import { ToastContainer } from 'react-toastify';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -29,53 +30,67 @@ import MilestonesPage from './pages/MilestonesPage';
 import AdminPage from './pages/AdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminSignupPage from './pages/AdminSignupPage';
+import PageLayout from './components/PageLayout';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => {
   const location = useLocation();
-
-  // List of routes where the footer should be hidden
-  const routesWithoutFooter = ['/chat'];
-
-  // Check if the current route starts with any of the specified paths
-  const shouldShowFooter = !routesWithoutFooter.some((route) =>
-    location.pathname.startsWith(route)
-  );
+  const shouldShowFooter = !location.pathname.startsWith('/chat');
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/google-signin" element={<GoogleSignInHandler />} />
-          <Route path="/profile-completion" element={<ProfileCompletionPage />} />
-          <Route path="/post-job" element={<PostJobPage />} />
-          <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/my-jobs" element={<MyJobsPage />} />
-          <Route path="/proposals" element={<MyProposalsPage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/chat/:chatId" element={<DirectMessagingPage />} />
-          <Route path="fund-wallet" element={<FundWalletPage />} />
-          <Route path="withdraw-funds" element={<WithdrawFundsPage />} />
-          <Route path="transactions" element={<TransactionHistoryPage />} />
-          <Route path="kyc" element={<KYCPage />} />
-          <Route path="/jobs/:jobId/milestones" element={<MilestonesPage />} />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminPage />
-               </ProtectedRoute>
-            } 
-          />
-          <Route path="/admin-signup" element={<AdminSignupPage />} />
-        </Routes>
-      </main>
+      <PageLayout>
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/google-signin" element={<GoogleSignInHandler />} />
+            <Route path="/profile-completion" element={<ProfileCompletionPage />} />
+            <Route path="/post-job" element={<PostJobPage />} />
+            <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/my-jobs" element={<MyJobsPage />} />
+            <Route path="/proposals" element={<MyProposalsPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/chat/:chatId" element={<DirectMessagingPage />} />
+            <Route path="fund-wallet" element={<FundWalletPage />} />
+            <Route path="withdraw-funds" element={<WithdrawFundsPage />} />
+            <Route path="transactions" element={<TransactionHistoryPage />} />
+            <Route path="kyc" element={<KYCPage />} />
+            <Route path="/jobs/:jobId/milestones" element={<MilestonesPage />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPage />
+                 </ProtectedRoute>
+              } 
+            />
+            <Route path="/admin-signup" element={<AdminSignupPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Routes>
+        </main>
+      </PageLayout>
       {shouldShowFooter && <Footer />}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        style={{
+          top: '4rem', // Adjusted to match header height
+          zIndex: 9999
+        }}
+      />
     </div>
   );
 };

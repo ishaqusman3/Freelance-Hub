@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { getJobsByClient } from "../services/jobService";
-import { getProposalsByJob, acceptProposal } from "../services/proposalService";
-import { getOrCreateChat } from "../services/messageService";
-import { useAuth } from "../context/FirebaseAuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { getJobsByClient } from '../services/jobService';
+import { getProposalsByJob, acceptProposal } from '../services/proposalService';
+import { getOrCreateChat } from '../services/messageService';
+import { useAuth } from '../context/FirebaseAuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 import { FaStar, FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaTasks } from 'react-icons/fa';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
+import { formatDistanceToNow } from 'date-fns';
 
 const MyJobsPage = () => {
   const { currentUser, userData } = useAuth();
@@ -21,9 +24,12 @@ const MyJobsPage = () => {
         if (!currentUser) return;
 
         const clientJobs = await getJobsByClient(currentUser.uid);
-        setJobs(clientJobs);
+        const sortedJobs = clientJobs.sort((a, b) => 
+          (b.postedAt?.seconds || 0) - (a.postedAt?.seconds || 0)
+        );
+        setJobs(sortedJobs);
       } catch (err) {
-        setError("Failed to fetch jobs.");
+        setError('Failed to fetch jobs.');
         console.error(err);
       } finally {
         setLoading(false);
@@ -39,77 +45,57 @@ const MyJobsPage = () => {
       setProposals((prev) => ({ ...prev, [jobId]: jobProposals }));
       setSelectedJob(jobId);
     } catch (err) {
-      console.error("Error fetching proposals:", err);
+      console.error('Error fetching proposals:', err);
     }
   };
 
   const handleAwardProposal = async (proposalId, jobId) => {
     try {
-      // Calculate milestone dates and payments based on job details
-      const job = jobs.find(j => j.id === jobId);
-      if (!job) {
-        throw new Error('Job not found');
-      }
-
-      const totalBudget = parseFloat(job.budget);
-      const deadline = new Date(job.deadline);
-      
-      if (isNaN(totalBudget) || !deadline) {
-        throw new Error('Invalid job budget or deadline');
-      }
-
-      // Create three milestones with evenly distributed payments and dates
-      const milestones = [
-        {
-          name: 'Project Initiation',
-          description: 'Initial setup and project planning',
-          payment: Math.floor(totalBudget * 0.3), // 30% of total budget
-          dueDate: new Date(Date.now() + (deadline - Date.now()) * 0.3).toISOString().split('T')[0],
-          status: 'pending'
-        },
-        {
-          name: 'Development Phase',
-          description: 'Main development work and implementation',
-          payment: Math.floor(totalBudget * 0.4), // 40% of total budget
-          dueDate: new Date(Date.now() + (deadline - Date.now()) * 0.6).toISOString().split('T')[0],
-          status: 'pending'
-        },
-        {
-          name: 'Project Completion',
-          description: 'Final delivery and project handover',
-          payment: Math.floor(totalBudget * 0.3), // 30% of total budget
-          dueDate: deadline.toISOString().split('T')[0],
-          status: 'pending'
-        }
-      ];
-
-      await acceptProposal(proposalId, jobId, milestones);
-      
-      // Refresh the proposals list
-      await handleViewProposals(jobId);
-      
-      alert("Proposal awarded successfully!");
+      await acceptProposal(proposalId, jobId);
+      await handleViewProposals(jobId); // Refresh proposals list
+      showNotification.success('Job awarded successfully');
     } catch (err) {
-      console.error("Error awarding proposal:", err);
-      alert(`Failed to award proposal: ${err.message}`);
+      console.error('Error awarding proposal:', err);
+      showNotification.error('Failed to award job');
     }
   };
 
   const handleChatWithFreelancer = async (freelancerId, freelancerName) => {
     try {
-      const chatId = await getOrCreateChat(
-        currentUser.uid,
-        freelancerId,
-        userData.fullName,
-        freelancerName
-      );
-      navigate(`/chat/${chatId}`, { state: { freelancerId, freelancerName } });
+      if (!currentUser || !userData) {
+        alert('You need to be logged in to start a chat.');
+        return;
+      }
+
+      const chatId = await getOrCreateChat({
+        clientId: currentUser.uid,
+        freelancerId: freelancerId,
+        clientName: userData.fullName || 'Unknown Client',
+        freelancerName: freelancerName || 'Unknown Freelancer'
+      });
+
+      if (chatId) {
+        navigate(`/chat/${chatId}`);
+      } else {
+        throw new Error('Failed to create or get chat');
+      }
     } catch (error) {
-      console.error("Error starting chat:", error);
+      console.error('Error starting chat:', error);
+      alert('Failed to start chat. Please try again.');
     }
   };
 
-  if (loading) return <div className="text-center mt-8">Loading...</div>;
+  const getInitials = (name) => {
+    if (!name) return 'U'; // Default to 'U' for "Unknown"
+    const initials = name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+    return initials;
+  };
+
+  if (loading) return <Loader loading={loading} />;
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (
@@ -124,9 +110,18 @@ const MyJobsPage = () => {
             <div key={job.id} className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold text-indigo-600 mb-2">{job.title}</h3>
               <p className="text-gray-600 mb-4">{job.description}</p>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm text-gray-500">Budget: ${job.budget}</span>
-                <span className="text-sm text-gray-500">Deadline: {job.deadline}</span>
+              <div className="flex items-center space-x-6 mb-4">
+                <div className="flex items-center">
+                  <FaMoneyBillWave className="text-green-500 mr-2" />
+                  <span className="font-semibold">₦{job.budget}</span>
+                </div>
+                <div className="flex items-center">
+                  <FaClock className="text-blue-500 mr-2" />
+                  <span>{job.deadline}</span>
+                </div>
+              </div>
+              <div className="text-gray-600 text-sm mb-4">
+                Posted {formatDistanceToNow(job.postedAt?.toDate() || new Date(), { addSuffix: true })}
               </div>
               <div className="flex space-x-4">
                 <button
@@ -135,10 +130,10 @@ const MyJobsPage = () => {
                 >
                   View Proposals
                 </button>
-                {proposals[job.id]?.some(proposal => proposal.status === 'accepted') && (
+                {proposals[job.id]?.some((proposal) => proposal.status === 'accepted') && (
                   <Link
                     to={`/jobs/${job.id}/milestones`}
-                    className="mt-4 ml-2 bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition duration-300 inline-flex items-center"
+                    className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition duration-300 inline-flex items-center"
                   >
                     <FaTasks className="mr-2" />
                     View Milestones
@@ -159,40 +154,57 @@ const MyJobsPage = () => {
                           className="bg-gray-50 p-4 rounded-lg border border-gray-200"
                         >
                           <div className="flex items-center mb-4">
-                            <img
-                              src={proposal.freelancerProfilePicture || "/placeholder-user.jpg"}
-                              alt={proposal.freelancerName}
-                              className="w-12 h-12 rounded-full mr-4"
-                            />
+                            {proposal.freelancerProfilePicture ? (
+                              <img
+                                src={proposal.freelancerProfilePicture}
+                                alt={`${proposal.freelancerName}'s Profile`}
+                                className="w-12 h-12 rounded-full mr-4 border-2 border-gray-300"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-purple-500 text-white flex items-center justify-center rounded-full text-lg font-bold mr-4">
+                                {getInitials(proposal.freelancerName)}
+                              </div>
+                            )}
                             <div>
                               <h5 className="font-semibold">{proposal.freelancerName}</h5>
                               <div className="flex items-center text-sm text-gray-500">
                                 <FaMapMarkerAlt className="mr-1" />
-                                <span>{proposal.freelancerLocation || "Location not specified"}</span>
+                                <span>
+                                  {proposal.freelancerLocation || 'Location not specified'}
+                                </span>
                               </div>
                             </div>
                           </div>
                           <div className="flex justify-between items-center mb-2">
                             <div className="flex items-center">
                               <FaMoneyBillWave className="text-green-500 mr-2" />
-                              <span className="font-semibold">${proposal.paymentAmountRequested}</span>
+                              <span className="font-semibold">
+                                ₦{proposal.proposedAmount || 'N/A'}
+                              </span>
                             </div>
                             <div className="flex items-center">
                               <FaClock className="text-blue-500 mr-2" />
-                              <span>{proposal.duration} days</span>
+                              <span>
+                                {proposal.completionDate
+                                  ? new Date(proposal.completionDate.seconds * 1000).toLocaleDateString()
+                                  : 'No completion date provided'}
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-center mb-4">
                             <FaStar className="text-yellow-400 mr-1" />
-                            <span>{proposal.freelancerRating ? `${proposal.freelancerRating.toFixed(1)} / 5.0` : "No ratings yet"}</span>
+                            <span>
+                              {proposal.freelancerRating
+                                ? `${proposal.freelancerRating.toFixed(1)} / 5.0`
+                                : 'No ratings yet'}
+                            </span>
                           </div>
-                          <p className="text-gray-600 mb-4">{proposal.coverLetter}</p>
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">
                               Status: <span className="font-semibold">{proposal.status}</span>
                             </span>
                             <div className="space-x-2">
-                              {proposal.status === "pending" && (
+                              {proposal.status === 'pending' && (
                                 <button
                                   className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300"
                                   onClick={() => handleAwardProposal(proposal.id, job.id)}
@@ -202,7 +214,12 @@ const MyJobsPage = () => {
                               )}
                               <button
                                 className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition duration-300"
-                                onClick={() => handleChatWithFreelancer(proposal.freelancerId, proposal.freelancerName)}
+                                onClick={() =>
+                                  handleChatWithFreelancer(
+                                    proposal.freelancerId,
+                                    proposal.freelancerName
+                                  )
+                                }
                               >
                                 Chat
                               </button>
