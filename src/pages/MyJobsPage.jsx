@@ -7,7 +7,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaStar, FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaTasks } from 'react-icons/fa';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
+<<<<<<< HEAD
 import { formatDistanceToNow } from 'date-fns';
+=======
+import { formatFirebaseTimestamp, formatTimeAgo } from '../utils/dateUtils';
+import { createActivity } from '../services/activityService';
+import { serverTimestamp } from 'firebase/firestore';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 const MyJobsPage = () => {
   const { currentUser, userData } = useAuth();
@@ -51,8 +57,39 @@ const MyJobsPage = () => {
 
   const handleAwardProposal = async (proposalId, jobId) => {
     try {
+<<<<<<< HEAD
       await acceptProposal(proposalId, jobId);
       await handleViewProposals(jobId); // Refresh proposals list
+=======
+      const job = jobs.find(j => j.id === jobId);
+      const proposal = proposals[jobId]?.find(p => p.id === proposalId);
+      
+      await acceptProposal(proposalId, jobId);
+      
+      // Create activity for client
+      await createActivity({
+        userId: currentUser.uid,
+        type: 'award_job',
+        text: `Awarded job "${job.title}" to ${proposal.freelancerName}`,
+        icon: '🏆',
+        jobId,
+        freelancerId: proposal.freelancerId,
+        timestamp: serverTimestamp()
+      });
+
+      // Create activity for freelancer
+      await createActivity({
+        userId: proposal.freelancerId,
+        type: 'job_awarded',
+        text: `You were awarded the job: ${job.title}`,
+        icon: '🎉',
+        jobId,
+        clientId: currentUser.uid,
+        timestamp: serverTimestamp()
+      });
+
+      await handleViewProposals(jobId);
+>>>>>>> 1c2342d (wallet and review fixed)
       showNotification.success('Job awarded successfully');
     } catch (err) {
       console.error('Error awarding proposal:', err);
@@ -95,6 +132,25 @@ const MyJobsPage = () => {
     return initials;
   };
 
+<<<<<<< HEAD
+=======
+  const renderRating = (rating, totalReviews) => (
+    <div className="flex items-center space-x-2">
+      <div className="flex items-center">
+        <FaStar className="text-yellow-400 mr-1" />
+        <span className="font-medium">
+          {rating ? `${rating.toFixed(1)} / 5.0` : 'No ratings'}
+        </span>
+      </div>
+      {totalReviews > 0 && (
+        <span className="text-gray-500 text-sm">
+          ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+        </span>
+      )}
+    </div>
+  );
+
+>>>>>>> 1c2342d (wallet and review fixed)
   if (loading) return <Loader loading={loading} />;
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
 
@@ -121,7 +177,11 @@ const MyJobsPage = () => {
                 </div>
               </div>
               <div className="text-gray-600 text-sm mb-4">
+<<<<<<< HEAD
                 Posted {formatDistanceToNow(job.postedAt?.toDate() || new Date(), { addSuffix: true })}
+=======
+                Posted {formatTimeAgo(job.postedAt)}
+>>>>>>> 1c2342d (wallet and review fixed)
               </div>
               <div className="flex space-x-4">
                 <button
@@ -153,6 +213,7 @@ const MyJobsPage = () => {
                           key={proposal.id}
                           className="bg-gray-50 p-4 rounded-lg border border-gray-200"
                         >
+<<<<<<< HEAD
                           <div className="flex items-center mb-4">
                             {proposal.freelancerProfilePicture ? (
                               <img
@@ -198,6 +259,44 @@ const MyJobsPage = () => {
                                 ? `${proposal.freelancerRating.toFixed(1)} / 5.0`
                                 : 'No ratings yet'}
                             </span>
+=======
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center">
+                              {proposal.freelancerProfilePicture ? (
+                                <img
+                                  src={proposal.freelancerProfilePicture}
+                                  alt={`${proposal.freelancerName}'s Profile`}
+                                  className="w-12 h-12 rounded-full mr-4 border-2 border-gray-300"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-purple-500 text-white flex items-center justify-center rounded-full text-lg font-bold mr-4">
+                                  {getInitials(proposal.freelancerName)}
+                                </div>
+                              )}
+                              <div>
+                                <h5 className="font-semibold">{proposal.freelancerName}</h5>
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <FaMapMarkerAlt className="mr-1" />
+                                  <span>{proposal.freelancerLocation || 'Location not specified'}</span>
+                                </div>
+                                {renderRating(proposal.freelancerRating, proposal.totalReviews)}
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col items-end">
+                              <div className="flex items-center text-green-600 font-semibold mb-2">
+                                <FaMoneyBillWave className="mr-2" />
+                                ₦{proposal.proposedAmount || 'N/A'}
+                              </div>
+                              <div className="flex items-center text-blue-600">
+                                <FaClock className="mr-2" />
+                                {proposal.completionDate ? 
+                                  formatFirebaseTimestamp(proposal.completionDate) : 
+                                  'No completion date provided'
+                                }
+                              </div>
+                            </div>
+>>>>>>> 1c2342d (wallet and review fixed)
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">

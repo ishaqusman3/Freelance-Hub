@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/FirebaseAuthContext';
 import { createJob } from '../services/jobService';
+<<<<<<< HEAD
 import { Timestamp } from 'firebase/firestore';
 import { FaBriefcase, FaFileAlt, FaMoneyBillWave, FaCalendarAlt, FaPaperclip, FaMapMarkerAlt } from 'react-icons/fa';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
+=======
+import { Timestamp, serverTimestamp } from 'firebase/firestore';
+import { FaBriefcase, FaFileAlt, FaMoneyBillWave, FaCalendarAlt, FaPaperclip, FaMapMarkerAlt } from 'react-icons/fa';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
+import { PREDEFINED_SKILLS } from '../constants/skills';
+import { createActivity } from '../services/activityService';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 export default function PostJobPage() {
   const { currentUser, userData } = useAuth();
@@ -51,6 +60,7 @@ export default function PostJobPage() {
         technologiesRequired: formData.technologiesRequired.split(',').map(tech => tech.trim()),
       };
 
+<<<<<<< HEAD
       await createJob(jobData);
       showNotification.success('Job posted successfully!');
       setFormData({ 
@@ -59,6 +69,27 @@ export default function PostJobPage() {
         budget: '', 
         deadline: '', 
         technologiesRequired: '', 
+=======
+      const jobId = await createJob(jobData);
+      
+      // Create activity for job posting
+      await createActivity({
+        userId: currentUser.uid,
+        type: 'post_job',
+        text: `Posted a new job: ${jobData.title}`,
+        icon: '📝',
+        jobId,
+        timestamp: serverTimestamp()
+      });
+
+      showNotification.success('Job posted successfully!');
+      setFormData({
+        title: '',
+        description: '',
+        budget: '',
+        deadline: '',
+        technologiesRequired: '',
+>>>>>>> 1c2342d (wallet and review fixed)
         attachment: null,
       });
     } catch (err) {
@@ -129,6 +160,7 @@ export default function PostJobPage() {
           </div>
           {/* Technologies Required */}
           <div className="relative">
+<<<<<<< HEAD
             <FaFileAlt className="absolute top-3 left-3 text-gray-400" />
             <input
               name="technologiesRequired"
@@ -139,6 +171,36 @@ export default function PostJobPage() {
               onChange={handleChange}
               className="w-full pl-10 py-2 border rounded focus:ring-indigo-500"
             />
+=======
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Required Skills
+            </label>
+            <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-white">
+              {PREDEFINED_SKILLS.map((skill) => (
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => {
+                    const currentSkills = formData.technologiesRequired.split(',').map(s => s.trim()).filter(Boolean);
+                    const updatedSkills = currentSkills.includes(skill)
+                      ? currentSkills.filter(s => s !== skill)
+                      : [...currentSkills, skill];
+                    setFormData({
+                      ...formData,
+                      technologiesRequired: updatedSkills.join(', ')
+                    });
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    formData.technologiesRequired.includes(skill)
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+>>>>>>> 1c2342d (wallet and review fixed)
           </div>
           {/* Attachment */}
           <div className="relative">

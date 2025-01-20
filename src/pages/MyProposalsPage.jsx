@@ -5,6 +5,10 @@ import { useAuth } from '../context/FirebaseAuthContext';
 import { Link } from 'react-router-dom';
 import { FaStar, FaMoneyBillWave, FaClock, FaTasks, FaMapMarkerAlt } from 'react-icons/fa';
 import Loader from '../components/Loader';
+<<<<<<< HEAD
+=======
+import { formatFirebaseTimestamp } from '../utils/dateUtils';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 const MyProposalsPage = () => {
   const { currentUser } = useAuth();
@@ -81,7 +85,15 @@ const MyProposalsPage = () => {
                   </div>
                   <div className="flex items-center">
                     <FaClock className="text-blue-500 mr-2" />
+<<<<<<< HEAD
                     <span>{proposal.completionDate ? new Date(proposal.completionDate.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
+=======
+                    <span>
+                      {proposal.completionDate
+                        ? formatFirebaseTimestamp(proposal.completionDate)
+                        : 'No completion date provided'}
+                    </span>
+>>>>>>> 1c2342d (wallet and review fixed)
                   </div>
                 </div>
                 <p className="text-gray-800 mb-2">
@@ -116,7 +128,11 @@ const MyProposalsPage = () => {
                 <p className="text-sm text-gray-500 mb-4">
                   Submitted on:{' '}
                   {proposal.submittedAt
+<<<<<<< HEAD
                     ? new Date(proposal.submittedAt.seconds * 1000).toLocaleDateString()
+=======
+                    ? formatFirebaseTimestamp(proposal.submittedAt)
+>>>>>>> 1c2342d (wallet and review fixed)
                     : 'Unknown'}
                 </p>
                 {proposal.status === 'accepted' && (

@@ -25,6 +25,7 @@ export const FirebaseAuthProvider = ({ children }) => {
 
   // Sign up function for email/password
   const signUp = async (email, password, fullName, isAdmin = false) => {
+<<<<<<< HEAD
     if (!fullName) {
       throw new Error('Full name is required.');
     }
@@ -55,6 +56,45 @@ export const FirebaseAuthProvider = ({ children }) => {
     }
 
     return userCredential;
+=======
+    try {
+      if (!fullName) {
+        throw new Error('Full name is required.');
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save user data to Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userData = {
+        fullName,
+        email,
+        role: null,
+        location: null,
+        skills: '',
+        isAdmin: isAdmin,
+        createdAt: serverTimestamp(),
+      };
+
+      await setDoc(userDocRef, userData);
+      console.log('User document created');
+
+      // Create wallet with better error handling
+      try {
+        const walletData = await createWallet(user.uid, fullName, email);
+        console.log('Wallet created successfully:', walletData);
+      } catch (walletError) {
+        console.error('Error creating wallet:', walletError);
+        // Don't throw here, allow signup to complete even if wallet creation fails
+      }
+
+      return userCredential;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+>>>>>>> 1c2342d (wallet and review fixed)
   };
 
   // Log in function for email/password

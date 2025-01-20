@@ -2,10 +2,18 @@ import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from '../context/FirebaseAuthContext';
+<<<<<<< HEAD
 import { FaPaperPlane, FaMoneyBillWave, FaTasks } from 'react-icons/fa';
 import { useParams, Link } from 'react-router-dom';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
+=======
+import { FaPaperPlane, FaMoneyBillWave, FaTasks, FaPaperclip } from 'react-icons/fa';
+import { useParams, Link } from 'react-router-dom';
+import Loader from '../components/Loader';
+import { showNotification } from '../utils/notification';
+import { uploadFile } from '../services/messageService';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 export default function DirectMessagingPage() {
   const { chatId } = useParams();
@@ -17,6 +25,10 @@ export default function DirectMessagingPage() {
   const { currentUser, userData } = useAuth();
   const messagesEndRef = useRef(null);
   const [loading, setLoading] = useState(false);
+<<<<<<< HEAD
+=======
+  const fileInputRef = useRef(null);
+>>>>>>> 1c2342d (wallet and review fixed)
 
   useEffect(() => {
     if (!chatId) return;
@@ -80,6 +92,54 @@ export default function DirectMessagingPage() {
     // You would typically update the user's wallet balance here
   };
 
+<<<<<<< HEAD
+=======
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      
+      // Add file validation
+      if (file.size > 10 * 1024 * 1024) {
+        showNotification.error('File size must be less than 10MB');
+        return;
+      }
+
+      const allowedTypes = [
+        'image/',
+        'application/pdf',
+        'text/',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+
+      if (!allowedTypes.some(type => file.type.startsWith(type))) {
+        showNotification.error('Invalid file type. Only images, PDFs, text, and Word documents are allowed.');
+        return;
+      }
+
+      const fileUrl = await uploadFile(file, chatId);
+      const senderName = userData?.fullName || currentUser.displayName || 'Anonymous';
+      
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        fileUrl,
+        fileName: file.name,
+        fileType: file.type,
+        senderId: currentUser.uid,
+        senderName: senderName,
+        timestamp: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      showNotification.error(error.message || 'Failed to upload file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+>>>>>>> 1c2342d (wallet and review fixed)
   if (!chatId) {
     return <div className="text-center p-4">No chat selected</div>;
   }
@@ -102,7 +162,29 @@ export default function DirectMessagingPage() {
               }`}
             >
               <div className="font-bold mb-1">{msg.senderName}</div>
+<<<<<<< HEAD
               <p>{msg.text}</p>
+=======
+              {msg.fileUrl ? (
+                <div className="message-attachment">
+                  {msg.fileType.startsWith('image/') ? (
+                    <img src={msg.fileUrl} alt={msg.fileName} className="max-w-full rounded-lg mb-2" />
+                  ) : (
+                    <a 
+                      href={msg.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-200 hover:text-blue-100 underline flex items-center"
+                    >
+                      <FaPaperclip className="mr-2" />
+                      {msg.fileName}
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <p>{msg.text}</p>
+              )}
+>>>>>>> 1c2342d (wallet and review fixed)
               <div className="text-xs mt-1 text-gray-300">
                 {msg.timestamp?.toDate().toLocaleString()}
               </div>
@@ -140,6 +222,25 @@ export default function DirectMessagingPage() {
             placeholder="Type a message..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+<<<<<<< HEAD
+=======
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-gray-500 text-white p-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            <FaPaperclip />
+          </button>
+          <div className="text-xs text-gray-500 mt-1">
+            Allowed files: Images, PDF, Text, Word docs (max 10MB)
+          </div>
+>>>>>>> 1c2342d (wallet and review fixed)
           <button
             type="submit"
             className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

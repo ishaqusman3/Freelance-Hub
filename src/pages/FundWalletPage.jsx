@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> 1c2342d (wallet and review fixed)
 import { FaMoneyBillWave } from 'react-icons/fa';
 import { initializePayment } from '../services/walletService';
 import { useAuth } from '../context/FirebaseAuthContext';
@@ -9,7 +13,11 @@ export default function FundWalletPage() {
   const [amount, setAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+<<<<<<< HEAD
   const [success, setSuccess] = useState(false);
+=======
+  const [walletDetails, setWalletDetails] = useState(null);
+>>>>>>> 1c2342d (wallet and review fixed)
   const { currentUser } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -24,14 +32,24 @@ export default function FundWalletPage() {
         email: currentUser.email
       });
 
+<<<<<<< HEAD
       showNotification.success('Payment initialized successfully');
       window.location.href = paymentResponse.checkoutUrl;
     } catch (err) {
       showNotification.error(err.message || 'Failed to initiate payment');
+=======
+      // Redirect to Monnify checkout page
+      window.location.href = paymentResponse.checkoutUrl;
+    } catch (err) {
+      setError(err.message || 'Failed to initiate payment');
+      showNotification.error(err.message || 'Failed to initiate payment');
+    } finally {
+>>>>>>> 1c2342d (wallet and review fixed)
       setIsLoading(false);
     }
   };
 
+<<<<<<< HEAD
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-r from-blue-600 to-purple-700 flex items-center justify-center px-4">
@@ -49,17 +67,38 @@ export default function FundWalletPage() {
     );
   }
 
+=======
+>>>>>>> 1c2342d (wallet and review fixed)
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-600 to-purple-700 flex items-center justify-center px-4">
       <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
         <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center">
           <FaMoneyBillWave className="mr-2" /> Fund Your Wallet
         </h2>
+<<<<<<< HEAD
+=======
+
+        {walletDetails && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold mb-2">Bank Transfer Details</h3>
+            <p>Account Number: {walletDetails.accountNumber}</p>
+            <p>Bank: {walletDetails.bankName}</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Transfer to this account to fund your wallet automatically
+            </p>
+          </div>
+        )}
+
+>>>>>>> 1c2342d (wallet and review fixed)
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
             {error}
           </div>
         )}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c2342d (wallet and review fixed)
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="amount" className="block text-gray-700 font-bold mb-2">
@@ -76,6 +115,10 @@ export default function FundWalletPage() {
               required
             />
           </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c2342d (wallet and review fixed)
           <button
             type="submit"
             className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 flex items-center justify-center"
@@ -97,7 +140,10 @@ export default function FundWalletPage() {
             )}
           </button>
         </form>
+<<<<<<< HEAD
         {isLoading && <Loader loading={isLoading} />}
+=======
+>>>>>>> 1c2342d (wallet and review fixed)
       </div>
     </div>
   );

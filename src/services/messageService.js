@@ -14,6 +14,11 @@ import {
   and,
   orderBy
 } from 'firebase/firestore';
+<<<<<<< HEAD
+=======
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth } from '../firebase/firebaseConfig';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 /**
  * Create or get a chat between a client and freelancer.
@@ -82,8 +87,14 @@ export const sendMessage = async (chatId, messageData) => {
 
   // Update the last message and timestamp in the chat document
   const chatRef = doc(db, 'chats', chatId);
+<<<<<<< HEAD
   await updateDoc(chatRef, {
     lastMessage: messageData.text,
+=======
+  const lastMessageText = messageData.fileUrl ? '📎 Attachment' : messageData.text;
+  await updateDoc(chatRef, {
+    lastMessage: lastMessageText,
+>>>>>>> 1c2342d (wallet and review fixed)
     lastMessageTimestamp: serverTimestamp(),
   });
 };
@@ -100,3 +111,57 @@ export const getMessagesInChat = async (chatId) => {
 
   return messageSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
+<<<<<<< HEAD
+=======
+
+// Add this new function to handle file uploads
+export const uploadFile = async (file, chatId) => {
+  try {
+    // First verify that the user is a participant in the chat
+    const chatRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatRef);
+    
+    if (!chatDoc.exists()) {
+      throw new Error('Chat not found');
+    }
+
+    const storage = getStorage();
+    const safeName = encodeURIComponent(file.name.replace(/[^a-zA-Z0-9.-]/g, '_'));
+    const fileRef = ref(storage, `chat-attachments/${chatId}/${Date.now()}_${safeName}`);
+    
+    // Validate file size
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('File size exceeds 10MB limit');
+    }
+    
+    // Validate file type
+    const allowedTypes = [
+      'image/',
+      'application/pdf',
+      'text/',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (!allowedTypes.some(type => file.type.startsWith(type))) {
+      throw new Error('Invalid file type');
+    }
+
+    // Set proper metadata
+    const metadata = {
+      contentType: file.type,
+      customMetadata: {
+        uploadedBy: auth.currentUser.uid,
+        chatId: chatId
+      }
+    };
+
+    const snapshot = await uploadBytes(fileRef, file, metadata);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw new Error(error.message || 'Failed to upload file');
+  }
+};
+>>>>>>> 1c2342d (wallet and review fixed)

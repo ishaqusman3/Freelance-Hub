@@ -5,6 +5,13 @@ import { useAuth } from '../context/FirebaseAuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
+<<<<<<< HEAD
+=======
+import { createActivity } from '../services/activityService';
+import { serverTimestamp } from 'firebase/firestore';
+import { formatTimeAgo } from '../utils/dateUtils';
+import { FaStar, FaMapMarkerAlt } from 'react-icons/fa';
+>>>>>>> 1c2342d (wallet and review fixed)
 
 const JobsPage = () => {
   const { currentUser, userData } = useAuth();
@@ -30,13 +37,33 @@ const JobsPage = () => {
           return;
         }
 
+<<<<<<< HEAD
         const fetchedJobs = await getAllJobs();
         const fetchedProposals = await getProposalsByFreelancer(currentUser.uid);
+=======
+        const [fetchedJobs, fetchedProposals] = await Promise.all([
+          getAllJobs(),
+          getProposalsByFreelancer(currentUser.uid)
+        ]);
+
+        // Create activity for viewing jobs
+        await createActivity({
+          userId: currentUser.uid,
+          type: 'view_jobs',
+          text: 'Viewed available jobs',
+          icon: '🔍'
+        });
+>>>>>>> 1c2342d (wallet and review fixed)
 
         setJobs(fetchedJobs);
         setProposals(fetchedProposals);
       } catch (err) {
+<<<<<<< HEAD
         setError(err.message);
+=======
+        console.error('Error fetching data:', err);
+        setError('Failed to load jobs. Please try again later.');
+>>>>>>> 1c2342d (wallet and review fixed)
         showNotification.error('Failed to load jobs');
       } finally {
         setLoading(false);
@@ -67,6 +94,10 @@ const JobsPage = () => {
         return;
       }
 
+<<<<<<< HEAD
+=======
+      const job = jobs.find(j => j.id === jobId);
+>>>>>>> 1c2342d (wallet and review fixed)
       const proposal = {
         jobId,
         freelancerId: currentUser.uid,
@@ -79,6 +110,32 @@ const JobsPage = () => {
       };
 
       await createProposal(proposal);
+<<<<<<< HEAD
+=======
+      
+      // Create activity for proposal submission
+      await createActivity({
+        userId: currentUser.uid,
+        type: 'submit_proposal',
+        text: `Submitted proposal for job: ${job?.title}`,
+        icon: '📋',
+        jobId,
+        proposedAmount: parseFloat(proposedAmount),
+        timestamp: serverTimestamp()
+      });
+
+      // Create activity for job owner
+      await createActivity({
+        userId: job.clientId,
+        type: 'received_proposal',
+        text: `Received proposal from ${userData.fullName} for job: ${job.title}`,
+        icon: '📨',
+        jobId,
+        freelancerId: currentUser.uid,
+        timestamp: serverTimestamp()
+      });
+
+>>>>>>> 1c2342d (wallet and review fixed)
       setProposals((prev) => [...prev, { jobId, ...proposal }]);
       showNotification.success('Proposal submitted successfully!');
       setProposedAmount('');
@@ -129,18 +186,50 @@ const JobsPage = () => {
       <div className="w-full max-w-4xl space-y-4">
         {getFilteredJobs().map((job) => (
           <div key={job.id} className="bg-white rounded-lg shadow-md p-6 mb-4">
+<<<<<<< HEAD
             <h3 className="text-xl font-bold text-gray-800">{job.title}</h3>
             <p className="text-gray-600 mt-2 mb-4">{job.description}</p>
             
+=======
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800">{job.title}</h3>
+              <div className="flex items-center">
+                <FaStar className="text-yellow-400 mr-1" />
+                <span className="text-gray-600">
+                  {job.clientRating ? 
+                    `${job.clientRating.toFixed(1)} / 5.0` : 
+                    'No ratings yet'
+                  }
+                </span>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mt-2 mb-4">{job.description}</p>
+            
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-gray-800">Posted by:</span>
+              <span className="text-gray-800">{job.clientName}</span>
+              {job.clientLocation && (
+                <span className="text-gray-600">
+                  <FaMapMarkerAlt className="inline mr-1" />
+                  {job.clientLocation}
+                </span>
+              )}
+            </div>
+
+>>>>>>> 1c2342d (wallet and review fixed)
             <div className="mt-4">
               <p className="text-gray-800">
                 <span className="font-bold">Budget:</span> ₦{job.budget}
               </p>
             </div>
 
+<<<<<<< HEAD
             <p className="text-gray-800 mt-4">
               <span className="font-bold">Client:</span> {job.clientName}
             </p>
+=======
+>>>>>>> 1c2342d (wallet and review fixed)
             <p className="text-gray-800 mt-2">
               <span className="font-bold">Deadline:</span> {job.deadline}
             </p>
@@ -155,7 +244,11 @@ const JobsPage = () => {
                 : 'Not specified'}
             </p>
             <div className="text-gray-600 text-sm">
+<<<<<<< HEAD
               Posted {formatDistanceToNow(job.postedAt || job.createdAt || job.datePosted, { addSuffix: true })}
+=======
+              Posted {formatTimeAgo(job.postedAt || job.createdAt || job.datePosted)}
+>>>>>>> 1c2342d (wallet and review fixed)
             </div>
             {hasAppliedForJob(job.id) ? (
               <button
