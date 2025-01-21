@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/FirebaseAuthContext';
 import { useParams } from 'react-router-dom';
-<<<<<<< HEAD
-import { getMilestones, updateMilestone, payMilestone, addMilestone } from '../services/milestoneService';
-=======
 import { getMilestones, updateMilestone, payMilestone, addMilestone, submitJobReview } from '../services/milestoneService';
->>>>>>> 1c2342d (wallet and review fixed)
 import { FaCheckCircle, FaHourglassHalf, FaDollarSign, FaExclamationTriangle, FaMoneyBillWave } from 'react-icons/fa';
 import { getJobById } from '../services/jobService';
 import { getProposalsByJob } from '../services/proposalService';
 import Loader from '../components/Loader';
-<<<<<<< HEAD
-=======
 import { showNotification } from '../utils/notification';
 import ReviewModal from '../components/ReviewModal';
->>>>>>> 1c2342d (wallet and review fixed)
 
 const MilestonesPage = () => {
   const { jobId } = useParams();
@@ -22,12 +15,9 @@ const MilestonesPage = () => {
   const [milestones, setMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-<<<<<<< HEAD
-=======
   const [acceptedProposal, setAcceptedProposal] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [jobCompleted, setJobCompleted] = useState(false);
->>>>>>> 1c2342d (wallet and review fixed)
 
   useEffect(() => {
     const fetchMilestones = async () => {
@@ -42,20 +32,12 @@ const MilestonesPage = () => {
         const proposals = await getProposalsByJob(jobId);
         
         // Find the accepted proposal for this job
-<<<<<<< HEAD
-        const acceptedProposal = proposals.find(p => p.status === 'accepted');
-        
-        // Check if user is authorized
-        const isClient = job.clientId === currentUser.uid;
-        const isFreelancer = acceptedProposal && acceptedProposal.freelancerId === currentUser.uid;
-=======
         const accepted = proposals.find(p => p.status === 'accepted');
         setAcceptedProposal(accepted);
         
         // Check if user is authorized
         const isClient = job.clientId === currentUser.uid;
         const isFreelancer = accepted && accepted.freelancerId === currentUser.uid;
->>>>>>> 1c2342d (wallet and review fixed)
         
         if (!isClient && !isFreelancer) {
           throw new Error('Unauthorized access');
@@ -74,15 +56,6 @@ const MilestonesPage = () => {
     fetchMilestones();
   }, [jobId, currentUser]);
 
-<<<<<<< HEAD
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen">
-  //       <Loader />
-  //     </div>
-  //   );
-  // }
-=======
   useEffect(() => {
     const checkJobStatus = async () => {
       const job = await getJobById(jobId);
@@ -93,7 +66,6 @@ const MilestonesPage = () => {
     checkJobStatus();
   }, [jobId]);
 
->>>>>>> 1c2342d (wallet and review fixed)
   const handleMarkCompleted = async (milestoneId) => {
     try {
       await updateMilestone(jobId, milestoneId, { status: 'completed' });
@@ -106,19 +78,6 @@ const MilestonesPage = () => {
     }
   };
 
-<<<<<<< HEAD
-  const handlePayMilestone = async (milestoneId) => {
-    try {
-      await payMilestone(milestoneId);
-      setMilestones(milestones.map(m => 
-        m.id === milestoneId ? { ...m, isPaid: true } : m
-      ));
-    } catch (err) {
-      setError('Failed to pay for milestone');
-      console.error(err);
-    }
-  };
-=======
   const handlePayMilestone = async (milestone) => {
     try {
       if (!acceptedProposal) {
@@ -160,7 +119,6 @@ const MilestonesPage = () => {
     }
   };
 
->>>>>>> 1c2342d (wallet and review fixed)
   if (loading) return <Loader loading={loading} />;
 
   return (
@@ -207,11 +165,7 @@ const MilestonesPage = () => {
                 )}
                 {userData.role === 'client' && milestone.status === 'completed' && !milestone.isPaid && (
                   <button
-<<<<<<< HEAD
-                    onClick={() => handlePayMilestone(milestone.id)}
-=======
                     onClick={() => handlePayMilestone(milestone)}
->>>>>>> 1c2342d (wallet and review fixed)
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
                   >
                     Pay Now
@@ -234,8 +188,6 @@ const MilestonesPage = () => {
           ))}
         </div>
       )}
-<<<<<<< HEAD
-=======
 
       {jobCompleted && (
         <div className="mt-4 p-4 bg-green-500 bg-opacity-20 rounded-lg">
@@ -257,7 +209,6 @@ const MilestonesPage = () => {
           onClose={() => setShowReviewModal(false)}
         />
       )}
->>>>>>> 1c2342d (wallet and review fixed)
     </div>
   );
 };

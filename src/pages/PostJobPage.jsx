@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/FirebaseAuthContext';
 import { createJob } from '../services/jobService';
-<<<<<<< HEAD
-import { Timestamp } from 'firebase/firestore';
-import { FaBriefcase, FaFileAlt, FaMoneyBillWave, FaCalendarAlt, FaPaperclip, FaMapMarkerAlt } from 'react-icons/fa';
-import Loader from '../components/Loader';
-import { showNotification } from '../utils/notification';
-=======
 import { Timestamp, serverTimestamp } from 'firebase/firestore';
 import { FaBriefcase, FaFileAlt, FaMoneyBillWave, FaCalendarAlt, FaPaperclip, FaMapMarkerAlt } from 'react-icons/fa';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
 import { PREDEFINED_SKILLS } from '../constants/skills';
 import { createActivity } from '../services/activityService';
->>>>>>> 1c2342d (wallet and review fixed)
 
 export default function PostJobPage() {
   const { currentUser, userData } = useAuth();
@@ -60,16 +53,6 @@ export default function PostJobPage() {
         technologiesRequired: formData.technologiesRequired.split(',').map(tech => tech.trim()),
       };
 
-<<<<<<< HEAD
-      await createJob(jobData);
-      showNotification.success('Job posted successfully!');
-      setFormData({ 
-        title: '', 
-        description: '', 
-        budget: '', 
-        deadline: '', 
-        technologiesRequired: '', 
-=======
       const jobId = await createJob(jobData);
       
       // Create activity for job posting
@@ -89,7 +72,6 @@ export default function PostJobPage() {
         budget: '',
         deadline: '',
         technologiesRequired: '',
->>>>>>> 1c2342d (wallet and review fixed)
         attachment: null,
       });
     } catch (err) {
@@ -160,18 +142,6 @@ export default function PostJobPage() {
           </div>
           {/* Technologies Required */}
           <div className="relative">
-<<<<<<< HEAD
-            <FaFileAlt className="absolute top-3 left-3 text-gray-400" />
-            <input
-              name="technologiesRequired"
-              type="text"
-              required
-              placeholder="Technologies Required (comma-separated)"
-              value={formData.technologiesRequired}
-              onChange={handleChange}
-              className="w-full pl-10 py-2 border rounded focus:ring-indigo-500"
-            />
-=======
             <label className="block text-gray-700 text-sm font-medium mb-2">
               Required Skills
             </label>
@@ -200,7 +170,6 @@ export default function PostJobPage() {
                 </button>
               ))}
             </div>
->>>>>>> 1c2342d (wallet and review fixed)
           </div>
           {/* Attachment */}
           <div className="relative">

@@ -7,15 +7,11 @@ import {
   updateDoc,
   addDoc,
   increment,
-<<<<<<< HEAD
-} from 'firebase/firestore';
-=======
   runTransaction,
   serverTimestamp,
 } from 'firebase/firestore';
 import { completeJob } from './jobService';
 import { createActivity } from './activityService';
->>>>>>> 1c2342d (wallet and review fixed)
 /**
  * Create milestones for a job.
  */
@@ -75,29 +71,6 @@ export const updateMilestone = async (jobId, milestoneId, updateData) => {
  * @param {number} paymentAmount - The payment amount for the milestone.
  */
 export const payMilestone = async (jobId, milestoneId, clientId, freelancerId, paymentAmount) => {
-<<<<<<< HEAD
-  const clientWalletRef = doc(db, 'wallets', clientId);
-  const freelancerWalletRef = doc(db, 'wallets', freelancerId);
-  const milestoneRef = doc(db, `jobs/${jobId}/milestones/${milestoneId}`);
-
-  const clientWalletSnapshot = await getDoc(clientWalletRef);
-  const freelancerWalletSnapshot = await getDoc(freelancerWalletRef);
-
-  if (!clientWalletSnapshot.exists()) throw new Error('Client wallet not found.');
-  if (!freelancerWalletSnapshot.exists()) throw new Error('Freelancer wallet not found.');
-
-  const clientWallet = clientWalletSnapshot.data();
-  if (clientWallet.balance < paymentAmount) {
-    throw new Error('Insufficient balance in client wallet.');
-  }
-
-  // Update wallet balances
-  await updateDoc(clientWalletRef, { balance: increment(-paymentAmount) });
-  await updateDoc(freelancerWalletRef, { balance: increment(paymentAmount) });
-
-  // Mark the milestone as paid
-  await updateDoc(milestoneRef, { isPaid: true });
-=======
   try {
     const clientWalletRef = doc(db, 'wallets', clientId);
     const freelancerWalletRef = doc(db, 'wallets', freelancerId);
@@ -160,7 +133,6 @@ export const payMilestone = async (jobId, milestoneId, clientId, freelancerId, p
     console.error('Error paying milestone:', error);
     throw error;
   }
->>>>>>> 1c2342d (wallet and review fixed)
 };
 
 /**
@@ -172,8 +144,6 @@ export const addMilestone = async (jobId, milestoneData) => {
   const milestonesRef = collection(db, `jobs/${jobId}/milestones`);
   await addDoc(milestonesRef, milestoneData);
 };
-<<<<<<< HEAD
-=======
 
 export const checkJobCompletion = async (jobId) => {
   try {
@@ -296,4 +266,3 @@ export const submitJobReview = async (jobId, reviewerId, reviewData) => {
     throw error;
   }
 };
->>>>>>> 1c2342d (wallet and review fixed)

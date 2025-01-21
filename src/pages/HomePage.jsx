@@ -9,11 +9,8 @@ import WalletBalance from "../components/WalletBalance";
 import { FaUser, FaSearch, FaFileAlt, FaComments, FaUserCircle, FaPencilAlt, FaChartBar, FaIdCard, FaMoneyBillWave, FaExchangeAlt, FaHistory, FaChartLine, FaStar, FaEdit, FaUsers, FaBriefcase, FaUserShield, FaCog, FaEye, FaTrash, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 import Loader from "../components/Loader";
 import { showNotification } from '../utils/notification';
-<<<<<<< HEAD
-=======
 import TransactionHistory from '../components/TransactionHistory';
 import { formatFirebaseTimestamp } from '../utils/dateUtils';
->>>>>>> 1c2342d (wallet and review fixed)
 
 const HomePage = () => {
   const { currentUser, userData, isAdmin } = useAuth();
@@ -216,11 +213,7 @@ const HomePage = () => {
                       <span>{activity.text}</span>
                     </div>
                     <span className="text-sm text-gray-300">
-<<<<<<< HEAD
-                      {new Date(activity.timestamp.seconds * 1000).toLocaleString()}
-=======
                       {formatFirebaseTimestamp(activity.timestamp)}
->>>>>>> 1c2342d (wallet and review fixed)
                     </span>
                   </li>
                 ))}
@@ -253,37 +246,6 @@ const HomePage = () => {
               <h3 className="text-2xl font-semibold mb-4">
                 Welcome back, {userData?.fullName || currentUser?.displayName || "User"}!
               </h3>
-<<<<<<< HEAD
-              <div className="flex flex-col md:flex-row justify-around items-center gap-4">
-                <div className="flex justify-around w-full md:w-auto">
-                  {userRole === "freelancer" ? (
-                    <>
-                      <div className="text-center mx-4">
-                        <p className="text-3xl font-bold">{userStats?.completedJobs || 0}</p>
-                        <p className="text-sm">Completed Jobs</p>
-                      </div>
-                      <div className="text-center mx-4">
-                        <p className="text-3xl font-bold">₦{userStats?.earnings || 0}</p>
-                        <p className="text-sm">Total Earnings</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-center mx-4">
-                        <p className="text-3xl font-bold">{userStats?.postedJobs || 0}</p>
-                        <p className="text-sm">Posted Jobs</p>
-                      </div>
-                      <div className="text-center mx-4">
-                        <p className="text-3xl font-bold">{userStats?.activeContracts || 0}</p>
-                        <p className="text-sm">Active Contracts</p>
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="w-full md:w-auto">
-                  <WalletBalance balance={walletBalance} />
-                  <div className="flex gap-2 mt-4">
-=======
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Stats Section */}
                 <div className="col-span-1">
@@ -317,7 +279,6 @@ const HomePage = () => {
                   <h4 className="text-xl font-semibold mb-4">Wallet Details</h4>
                   <WalletBalance />
                   <div className="flex gap-4 mt-4">
->>>>>>> 1c2342d (wallet and review fixed)
                     <Link
                       to="/fund-wallet"
                       className="flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300"
@@ -364,31 +325,6 @@ const HomePage = () => {
             {/* Recent Activity */}
             <section className="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 mb-8">
               <h3 className="text-2xl font-semibold mb-4">Recent Activity</h3>
-<<<<<<< HEAD
-              {recentActivity.length === 0 ? (
-                <p className="text-center text-gray-300">No recent activity</p>
-              ) : (
-                <ul className="space-y-2">
-                  {recentActivity.map((activity, index) => (
-                    <li key={index} className="flex justify-between items-center p-3 bg-white bg-opacity-10 rounded-lg">
-                      <div className="flex items-center">
-                        <span className="text-2xl mr-3">{activity.icon || '🔔'}</span>
-                        <span>{activity.text}</span>
-                      </div>
-                      <span className="text-sm text-gray-300">
-                        {new Date(activity.timestamp.seconds * 1000).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Link
-                to="/transactions"
-                className="mt-4 text-sm text-white hover:text-purple-200 flex items-center justify-center"
-              >
-                <FaHistory className="mr-1" /> View All Activity
-              </Link>
-=======
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* System Activities */}
                 <div>
@@ -418,7 +354,6 @@ const HomePage = () => {
                   <TransactionHistory />
                 </div>
               </div>
->>>>>>> 1c2342d (wallet and review fixed)
             </section>
 
             {/* Trending Skills */}
@@ -426,10 +361,6 @@ const HomePage = () => {
               <h3 className="text-2xl font-semibold mb-4">Trending Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {trendingSkills.map((skill, index) => (
-<<<<<<< HEAD
-                  <span key={index} className="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm">
-                    {skill}
-=======
                   <span
                     key={index}
                     className="bg-purple-600 bg-opacity-80 px-4 py-2 rounded-full text-sm text-white flex items-center gap-2"
@@ -438,7 +369,6 @@ const HomePage = () => {
                     <span className="bg-purple-800 px-2 py-0.5 rounded-full text-xs">
                       {skill.percentage}%
                     </span>
->>>>>>> 1c2342d (wallet and review fixed)
                   </span>
                 ))}
               </div>

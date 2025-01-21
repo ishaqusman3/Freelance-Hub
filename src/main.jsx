@@ -3,10 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { FirebaseAuthProvider } from './context/FirebaseAuthContext';
 import { ToastContainer } from 'react-toastify';
-<<<<<<< HEAD
-=======
 import 'react-toastify/dist/ReactToastify.css';
->>>>>>> 1c2342d (wallet and review fixed)
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -36,10 +33,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminSignupPage from './pages/AdminSignupPage';
 import PageLayout from './components/PageLayout';
 import ProfilePage from './pages/ProfilePage';
-<<<<<<< HEAD
-=======
 import PaymentCallback from './components/PaymentCallback';
->>>>>>> 1c2342d (wallet and review fixed)
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 const App = () => {
   const location = useLocation();
@@ -64,34 +61,25 @@ const App = () => {
             <Route path="/proposals" element={<MyProposalsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/chat/:chatId" element={<DirectMessagingPage />} />
-<<<<<<< HEAD
-            <Route path="fund-wallet" element={<FundWalletPage />} />
-            <Route path="withdraw-funds" element={<WithdrawFundsPage />} />
-            <Route path="transactions" element={<TransactionHistoryPage />} />
-            <Route path="kyc" element={<KYCPage />} />
-            <Route path="/jobs/:jobId/milestones" element={<MilestonesPage />} />
-=======
             <Route path="/fund-wallet" element={<FundWalletPage />} />
             <Route path="/withdraw-funds" element={<WithdrawFundsPage />} />
             <Route path="/transactions" element={<TransactionHistoryPage />} />
             <Route path="/kyc" element={<KYCPage />} />
             <Route path="/jobs/:jobId/milestones" element={<MilestonesPage />} />
             <Route path="/payment-callback" element={<PaymentCallback />} />
->>>>>>> 1c2342d (wallet and review fixed)
             <Route 
               path="/admin" 
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminPage />
-<<<<<<< HEAD
-                 </ProtectedRoute>
-=======
                 </ProtectedRoute>
->>>>>>> 1c2342d (wallet and review fixed)
               } 
             />
             <Route path="/admin-signup" element={<AdminSignupPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} /> 
           </Routes>
         </main>
       </PageLayout>

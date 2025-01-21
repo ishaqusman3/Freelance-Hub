@@ -2,18 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from '../context/FirebaseAuthContext';
-<<<<<<< HEAD
-import { FaPaperPlane, FaMoneyBillWave, FaTasks } from 'react-icons/fa';
-import { useParams, Link } from 'react-router-dom';
-import Loader from '../components/Loader';
-import { showNotification } from '../utils/notification';
-=======
 import { FaPaperPlane, FaMoneyBillWave, FaTasks, FaPaperclip } from 'react-icons/fa';
 import { useParams, Link } from 'react-router-dom';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
 import { uploadFile } from '../services/messageService';
->>>>>>> 1c2342d (wallet and review fixed)
 
 export default function DirectMessagingPage() {
   const { chatId } = useParams();
@@ -25,10 +18,7 @@ export default function DirectMessagingPage() {
   const { currentUser, userData } = useAuth();
   const messagesEndRef = useRef(null);
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
-=======
   const fileInputRef = useRef(null);
->>>>>>> 1c2342d (wallet and review fixed)
 
   useEffect(() => {
     if (!chatId) return;
@@ -92,8 +82,6 @@ export default function DirectMessagingPage() {
     // You would typically update the user's wallet balance here
   };
 
-<<<<<<< HEAD
-=======
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -139,7 +127,6 @@ export default function DirectMessagingPage() {
     }
   };
 
->>>>>>> 1c2342d (wallet and review fixed)
   if (!chatId) {
     return <div className="text-center p-4">No chat selected</div>;
   }
@@ -162,9 +149,6 @@ export default function DirectMessagingPage() {
               }`}
             >
               <div className="font-bold mb-1">{msg.senderName}</div>
-<<<<<<< HEAD
-              <p>{msg.text}</p>
-=======
               {msg.fileUrl ? (
                 <div className="message-attachment">
                   {msg.fileType.startsWith('image/') ? (
@@ -184,7 +168,6 @@ export default function DirectMessagingPage() {
               ) : (
                 <p>{msg.text}</p>
               )}
->>>>>>> 1c2342d (wallet and review fixed)
               <div className="text-xs mt-1 text-gray-300">
                 {msg.timestamp?.toDate().toLocaleString()}
               </div>
@@ -222,8 +205,6 @@ export default function DirectMessagingPage() {
             placeholder="Type a message..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-<<<<<<< HEAD
-=======
           <input
             type="file"
             ref={fileInputRef}
@@ -240,7 +221,6 @@ export default function DirectMessagingPage() {
           <div className="text-xs text-gray-500 mt-1">
             Allowed files: Images, PDF, Text, Word docs (max 10MB)
           </div>
->>>>>>> 1c2342d (wallet and review fixed)
           <button
             type="submit"
             className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

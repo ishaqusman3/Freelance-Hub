@@ -1,23 +1,8 @@
-<<<<<<< HEAD
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-=======
 import { collection, query, where, orderBy, limit, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
->>>>>>> 1c2342d (wallet and review fixed)
 import { db } from '../firebase/firebaseConfig';
 
 // Fetch recent activities for a user
 export const getRecentActivities = async (userId) => {
-<<<<<<< HEAD
-  const activitiesRef = collection(db, 'activities');
-  const q = query(
-    activitiesRef,
-    where('userId', '==', userId),
-    orderBy('timestamp', 'desc'),
-    limit(10) // Fetch the 10 most recent activities
-  );
-  const activitySnap = await getDocs(q);
-  return activitySnap.docs.map((doc) => doc.data());
-=======
   try {
     const activitiesRef = collection(db, 'activities');
     const q = query(
@@ -78,5 +63,4 @@ export const createActivity = async (activityData) => {
   } catch (error) {
     console.error('Error creating activity:', error);
   }
->>>>>>> 1c2342d (wallet and review fixed)
 };

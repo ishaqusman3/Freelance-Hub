@@ -14,11 +14,8 @@ import {
   and,
   orderBy
 } from 'firebase/firestore';
-<<<<<<< HEAD
-=======
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth } from '../firebase/firebaseConfig';
->>>>>>> 1c2342d (wallet and review fixed)
 
 /**
  * Create or get a chat between a client and freelancer.
@@ -87,14 +84,9 @@ export const sendMessage = async (chatId, messageData) => {
 
   // Update the last message and timestamp in the chat document
   const chatRef = doc(db, 'chats', chatId);
-<<<<<<< HEAD
-  await updateDoc(chatRef, {
-    lastMessage: messageData.text,
-=======
   const lastMessageText = messageData.fileUrl ? '📎 Attachment' : messageData.text;
   await updateDoc(chatRef, {
     lastMessage: lastMessageText,
->>>>>>> 1c2342d (wallet and review fixed)
     lastMessageTimestamp: serverTimestamp(),
   });
 };
@@ -111,8 +103,6 @@ export const getMessagesInChat = async (chatId) => {
 
   return messageSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
-<<<<<<< HEAD
-=======
 
 // Add this new function to handle file uploads
 export const uploadFile = async (file, chatId) => {
@@ -164,4 +154,3 @@ export const uploadFile = async (file, chatId) => {
     throw new Error(error.message || 'Failed to upload file');
   }
 };
->>>>>>> 1c2342d (wallet and review fixed)

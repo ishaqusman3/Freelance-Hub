@@ -1,9 +1,5 @@
 import { db } from '../firebase/firebaseConfig';
-<<<<<<< HEAD
-import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where, updateDoc, serverTimestamp } from 'firebase/firestore';
-=======
 import { collection, addDoc, getDocs, doc, deleteDoc, getDoc, query, where, updateDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
->>>>>>> 1c2342d (wallet and review fixed)
 
 /**
  * Create a new job in Firestore.
@@ -123,27 +119,6 @@ export const getJobById = async (jobId) => {
  * @returns {Array} - List of top trending skills.
  */
 export const getTrendingSkills = async () => {
-<<<<<<< HEAD
-  const jobsRef = collection(db, 'jobs');
-  const jobSnapshot = await getDocs(jobsRef);
-
-  // Collect all skills from job postings
-  const skillCounts = {};
-  jobSnapshot.docs.forEach((doc) => {
-    const job = doc.data();
-    if (job.skills && Array.isArray(job.skills)) {
-      job.skills.forEach((skill) => {
-        skillCounts[skill] = (skillCounts[skill] || 0) + 1; // Increment skill count
-      });
-    }
-  });
-
-  // Sort skills by count and return the top 5
-  return Object.entries(skillCounts)
-    .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
-    .slice(0, 5)
-    .map(([skill]) => skill); // Extract skill names
-=======
   try {
     const jobsRef = collection(db, 'jobs');
     const jobSnapshot = await getDocs(jobsRef);
@@ -179,7 +154,6 @@ export const getTrendingSkills = async () => {
     console.error('Error fetching trending skills:', error);
     return [];
   }
->>>>>>> 1c2342d (wallet and review fixed)
 };
 
 /**
@@ -198,15 +172,6 @@ export const assignFreelancerToJob = async (jobId, freelancerData) => {
       throw new Error('Job not found');
     }
 
-<<<<<<< HEAD
-    await updateDoc(jobRef, {
-      freelancerId: freelancerData.freelancerId,
-      freelancerName: freelancerData.freelancerName,
-      status: 'in_progress',
-      updatedAt: serverTimestamp(),
-      assignedAt: serverTimestamp(),
-      contractStatus: 'active'
-=======
     const jobData = jobDoc.data();
 
     await runTransaction(db, async (transaction) => {
@@ -242,7 +207,6 @@ export const assignFreelancerToJob = async (jobId, freelancerData) => {
         timestamp: serverTimestamp(),
         jobId
       });
->>>>>>> 1c2342d (wallet and review fixed)
     });
 
     return true;
@@ -252,8 +216,6 @@ export const assignFreelancerToJob = async (jobId, freelancerData) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 /**
  * Get job statistics for a user.
  * @param {string} userId - The ID of the user.
@@ -346,4 +308,3 @@ export const completeJob = async (jobId) => {
   }
 };
 
->>>>>>> 1c2342d (wallet and review fixed)

@@ -15,10 +15,7 @@ import {
 } from 'react-icons/fa';
 import Loader from '../components/Loader';
 import { showNotification } from '../utils/notification';
-<<<<<<< HEAD
-=======
 import { PREDEFINED_SKILLS } from '../constants/skills';
->>>>>>> 1c2342d (wallet and review fixed)
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -64,11 +61,7 @@ const SignupPage = () => {
 
     try {
       // 1. Create Firebase Auth user
-<<<<<<< HEAD
-      const userCredential = await signUp(formData.email, formData.password, formData.fullName); // Pass fullName here
-=======
       const userCredential = await signUp(formData.email, formData.password, formData.fullName);
->>>>>>> 1c2342d (wallet and review fixed)
       const user = userCredential.user;
 
       // 2. Prepare user data for Firestore
@@ -78,21 +71,12 @@ const SignupPage = () => {
         role: formData.role,
         location: formData.location,
         skills: formData.role === 'freelancer' ? formData.skills.split(',').map(skill => skill.trim()) : [],
-<<<<<<< HEAD
-        // createdAt: new Date()
-=======
->>>>>>> 1c2342d (wallet and review fixed)
       };
 
       // 3. Add user to Firestore
       await addUserToFirestore(user.uid, userData);
 
       // 4. Create wallet for the user
-<<<<<<< HEAD
-      await createWallet(user.uid, formData.fullName, formData.email);
-
-      // 5. Navigate to home page
-=======
       const walletData = await createWallet(user.uid, formData.fullName, formData.email);
       
       // 5. Verify wallet creation
@@ -101,15 +85,11 @@ const SignupPage = () => {
       }
 
       // 6. Navigate to home page
->>>>>>> 1c2342d (wallet and review fixed)
       showNotification.success('Account created successfully!');
       navigate('/home');
     } catch (err) {
       showNotification.error(err.message || 'Failed to create account');
-<<<<<<< HEAD
-=======
       console.error('Signup error:', err);
->>>>>>> 1c2342d (wallet and review fixed)
     } finally {
       setLoading(false);
     }
@@ -256,21 +236,6 @@ const SignupPage = () => {
 
             {formData.role === 'freelancer' && (
               <div className="relative">
-<<<<<<< HEAD
-                <label htmlFor="skills" className="sr-only">
-                  Skills
-                </label>
-                <FaTools className="absolute top-3 left-3 text-gray-400" />
-                <input
-                  id="skills"
-                  name="skills"
-                  type="text"
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Skills (comma-separated)"
-                  value={formData.skills}
-                  onChange={handleChange}
-                />
-=======
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Select Your Skills
                 </label>
@@ -299,7 +264,6 @@ const SignupPage = () => {
                     </button>
                   ))}
                 </div>
->>>>>>> 1c2342d (wallet and review fixed)
               </div>
             )}
           </div>
